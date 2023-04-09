@@ -1,0 +1,28 @@
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <arg name="world_frame" default="world"/>
+  <!-- This should actually be "/world". See https://github.com/ros-simulation/gazebo_ros_pkgs/pull/324 -->
+  <arg name="base_link_frame" default="base_link"/>
+
+  <xacro:include filename="$(find hector_quadrotor_gazebo)/urdf/quadrotor_sensors.gazebo.xacro" />
+  <xacro:include filename="$(find hector_quadrotor_gazebo)/urdf/quadrotor_controller.gazebo.xacro" />
+  <xacro:include filename="$(find hector_quadrotor_gazebo)/urdf/quadrotor_propulsion.gazebo.xacro" />
+  <xacro:include filename="$(find hector_quadrotor_gazebo)/urdf/quadrotor_aerodynamics.gazebo.xacro" />
+
+  <!-- Quadrotor Gazebo Plugins -->
+  <xacro:quadrotor_sensors />
+  <xacro:quadrotor_controller />
+  <xacro:quadrotor_propulsion />
+  <xacro:quadrotor_aerodynamics />
+
+  <!-- Rssi Receiver -->
+  <gazebo>
+    <plugin name="receiver_model_plugin" filename="libreceiver_model_plugin.so">
+      <receiver_link>base_link</receiver_link>
+      <!--            <update_rate>30</update_rate>-->
+      <use_sync>1</use_sync>
+    </plugin>
+  </gazebo>
+
+
+</robot>

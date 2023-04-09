@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<sdf version="1.4">
+  <world name="default">
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    <plugin name="beacons_sync_world_plugin" filename="libbeacons_sync_world_plugin.so">
+      <update_rate>60</update_rate>
+    </plugin>
+  </world>
+</sdf>

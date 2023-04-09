@@ -1,0 +1,33 @@
+<?xml version='1.0'?>
+<sdf version='1.4'>
+    <model name="beacon_v1">
+        <link name="beacon">
+            <collision name="collision">
+                <pose>0 0 0 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>0.10 0.10 0.25</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name="visual">
+                <pose>0 0 0 0 0 0</pose>
+                <geometry>
+                    <!-- <box>
+                        <size>0.10 0.10 0.25</size>
+                    </box> -->
+                    <mesh>
+                        <uri>/home/leon/test_ws/src/beacon_gazebo_sim/models/beacon/model.dae</uri>
+                        <!-- SOLU PROVISIONAL -->
+                        <scale>0.005 0.005 0.005</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+            <gravity>0</gravity>
+        </link>
+        <plugin name="receiver_model_plugin" filename="libbeacon_model_plugin.so">
+            <m_rssi>-60</m_rssi>
+            <beacon_link>beacon</beacon_link>
+        </plugin>
+    </model>
+</sdf>
