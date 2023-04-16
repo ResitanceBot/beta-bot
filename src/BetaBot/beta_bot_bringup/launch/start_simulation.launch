@@ -4,7 +4,7 @@
 
   <arg name="spawn_double" default="false"/>
   <arg name="world_name" default="small_city"/>
-  <arg name="height" default="5" />
+  <arg name="height" default="15" />
 
   <!-- Start Gazebo with wg world running in (max) realtime -->
   <include file="$(find beta_bot_gazebo)/launch/load_world.launch">

@@ -2,14 +2,6 @@
 <sdf version='1.4'>
     <model name="beacon_v1">
         <link name="beacon">
-            <collision name="collision">
-                <pose>0 0 0 0 0 0</pose>
-                <geometry>
-                    <box>
-                        <size>0.10 0.10 0.25</size>
-                    </box>
-                </geometry>
-            </collision>
             <visual name="visual">
                 <pose>0 0 0 0 0 0</pose>
                 <geometry>
