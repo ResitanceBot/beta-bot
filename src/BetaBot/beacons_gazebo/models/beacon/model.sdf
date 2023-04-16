@@ -3,7 +3,7 @@
     <model name="beacon_v1">
         <link name="beacon">
             <visual name="visual">
-                <pose>0 0 0 0 0 0</pose>
+                <pose>-1.144 -1.108 -1.19 0 0 0</pose>
                 <geometry>
                     <!-- <box>
                         <size>0.10 0.10 0.25</size>
