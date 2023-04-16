@@ -1,0 +1,13 @@
+<launch>
+
+ <!-- joy node -->
+  <node respawn="true" pkg="joy"
+        type="joy_node" name="node_joy" >
+    <param name="dev" type="string" value="/dev/input/js0" />
+    <param name="deadzone" value="0.12" />
+  </node>
+
+ <!-- joy_to_cmd_vel node -->
+  <node pkg="control_mando" type="joy_to_cmd_vel" name="joy_to_cmd_vel" output="screen"/> 
+  
+</launch>

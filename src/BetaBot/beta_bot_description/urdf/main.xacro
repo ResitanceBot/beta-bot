@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+
+<robot name="quadrotor"
+    xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <!-- MACROS -->
+    <xacro:macro name="quadrotor_base_macro">
+        <link name="body">
+            <inertial>
+                <mass value="1.477" />
+                <origin xyz="0 0 0" />
+                <inertia ixx="0.01152" ixy="0.0" ixz="0.0" iyy="0.01152" iyz="0.0" izz="0.0218" />
+            </inertial>
+
+            <visual>
+                <origin xyz="-0.35 -0.775 -0.6" rpy="0.0 0.0 0.0"/>
+                <geometry>
+                    <mesh filename="package://beta_bot_description/meshes/model.dae" scale="0.05 0.05 0.05"/>
+                </geometry>
+            </visual>
+
+            <collision>
+                <geometry>
+                    <box size="2.25 2.25 1.5"/>
+                </geometry>
+            </collision>
+        </link>
+    </xacro:macro>
+
+    <!-- LINKS AND JOINTS DESCRIPTION -->
+    <link name="base_link"/>
+    <joint name="virtual_joint_base_to_body" type="fixed">
+        <parent link="base_link"/>
+        <child link="body"/>
+        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    </joint>
+    <xacro:quadrotor_base_macro />
+
+    <!-- GAZEBO PLUGINS -->
+    <xacro:include filename="$(find beta_bot_description)/urdf/quadrotor_plugins.gazebo.xacro" />
+
+</robot>
+
