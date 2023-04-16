@@ -15,8 +15,9 @@ void receiver_callback(const beacons_gazebo::ReceiverIn& msg) {
     float measured_power = msg.m_rssi;
     int N=2;
     std_msgs::Float64 distance;
-    distance.data = pow(10,((measured_power -msg.rssi)/(10 * N)));
-    ROS_INFO_STREAM("Potencia recibida: "<<msg.rssi);
+    // distance.data = pow(10,((measured_power -msg.rssi)/(10 * N)));
+    distance.data = pow(msg.rssi/measured_power,10);
+    ROS_INFO_STREAM("Potencia recibida: "<<msg.rssi);   
     ROS_INFO_STREAM("Distancia calculada: "<<distance.data);
     pub.publish(distance);
     } 

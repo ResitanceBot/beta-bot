@@ -48,8 +48,8 @@ void joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
     if(joy->axes[0] < -BREAKOUT_JOYSTICKS) twist.angular.z = 3*SPEED * float(-1.0);
     else if(joy->axes[0] > BREAKOUT_JOYSTICKS) twist.angular.z = 3*SPEED * float(1.0);
     // FORWARD / BACKWARD (Joystick der, Eje Vertical == axes[4]) (Avance/Retroceso)
-    if(joy->axes[4] < -BREAKOUT_JOYSTICKS) twist.linear.x = SPEED * float(-1.0);
-    else if(joy->axes[4] > BREAKOUT_JOYSTICKS) twist.linear.x = SPEED * float(1.0);
+    if(joy->axes[4] < -BREAKOUT_JOYSTICKS) twist.linear.x = SPEED * float(1.0);
+    else if(joy->axes[4] > BREAKOUT_JOYSTICKS) twist.linear.x = SPEED * float(-1.0);
     // LEFT / RIGHT (Joystick der, Eje Horizontal == axes[3]) (Der/izq)
     if(joy->axes[3] < -BREAKOUT_JOYSTICKS) twist.linear.y = SPEED * float(-1.0);
     else if(joy->axes[3] > BREAKOUT_JOYSTICKS) twist.linear.y = SPEED * float(1.0);
