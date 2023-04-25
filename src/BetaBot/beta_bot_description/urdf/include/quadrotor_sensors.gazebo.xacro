@@ -12,19 +12,6 @@
     
   <xacro:macro name="quadrotor_sensors">
         <gazebo>
-          <plugin name="quadrotor_imu_sim" filename="libhector_gazebo_ros_imu.so">
-            <updateRate>100.0</updateRate>
-            <bodyName>base_link</bodyName>
-            <frameId>$(arg base_link_frame)</frameId>
-            <topicName>raw_imu</topicName>
-            <rpyOffset>0 0 0</rpyOffset> 
-            <gaussianNoise>0</gaussianNoise>  
-            <accelDrift>0.5 0.5 0.5</accelDrift>
-            <accelGaussianNoise>0.35 0.35 0.3</accelGaussianNoise>
-            <rateDrift>0.1 0.1 0.1</rateDrift>
-            <rateGaussianNoise>0.05 0.05 0.015</rateGaussianNoise>
-          </plugin>
-
           <plugin name="quadrotor_baro_sim" filename="libhector_gazebo_ros_baro.so">
             <updateRate>10.0</updateRate>
             <bodyName>base_link</bodyName>
@@ -70,7 +57,7 @@
         </gazebo>
 
         <!-- PLUGIN PROPIO -->
-        <gazebo reference="base_link"> <!-- Referencia al link donde se quiere conectar este sensor -->
+        <gazebo reference="base_link"> 
         <gravity>true</gravity>
         <sensor name="imu_sensor" type="imu">
           <always_on>true</always_on>
@@ -78,7 +65,7 @@
           <visualize>true</visualize>
           <topic>raw_imu3</topic>
           <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
-            <topicName>raw_imu3</topicName>
+            <topicName>raw_imu</topicName>
             <bodyName>base_link</bodyName>
             <updateRateHZ>30.0</updateRateHZ>
             <gaussianNoise>0.005</gaussianNoise>
@@ -90,6 +77,20 @@
           <pose>0 0 0 0 0 0</pose>
         </sensor>
         </gazebo>
+    
+        
+        <!-- IMU SERGI        
+        <gazebo>
+        <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
+      	<alwaysOn>true</alwaysOn>
+      	<bodyName>base_link</bodyName>
+      	<topicName>raw_imu</topicName>
+      	<serviceName>imu_service</serviceName>
+      	<gaussianNoise>0.0</gaussianNoise>
+      	<updateRate>30.0</updateRate>
+    	  </plugin>
+        </gazebo>
+        -->
         
         <gazebo reference="front_cam_link">
           <sensor type="multicamera" name="stereo_camera">
