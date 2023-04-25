@@ -138,7 +138,7 @@ void GazeboRosBaro::Update()
   double dt = updateTimer.getTimeSinceLastUpdate().Double();
 
   ignition::math::Pose3d pose = link->WorldPose();
-  double height = sensor_model_(pose.Pos().Z(), 0);
+  double height = sensor_model_(pose.Pos().Z(), dt);
 
   if (height_publisher_) {
     height_.header.stamp = ros::Time(sim_time.sec, sim_time.nsec);

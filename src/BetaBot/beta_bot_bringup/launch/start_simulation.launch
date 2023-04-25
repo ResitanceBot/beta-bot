@@ -5,6 +5,7 @@
   <arg name="spawn_double" default="false"/>
   <arg name="world_name" default="small_city"/>
   <arg name="height" default="15" />
+  <arg name="use_beta_bot_localization" default="true"/>
 
   <!-- Start Gazebo with wg world running in (max) realtime -->
   <include file="$(find beta_bot_gazebo)/launch/load_world.launch">
@@ -20,7 +21,15 @@
 
   <!-- Launch RSSI Beacon odom -->
   <node name="rssi_to_distance" pkg="beacons_gazebo" type="rssi_to_distance" output="screen"/>
-
+  
+  <!-- Launch selected localization node -->
+  <group if="$(arg use_beta_bot_localization)">
+  	<include file="$(find beta_bot_localization)/launch/beta_bot_localization.launch"/> 
+  </group>
+  <group unless="$(arg use_beta_bot_localization)">
+  	<include file="$(find robot_localization_betabot)/launch/robot_localization.launch"/>
+  </group>
+    
   <!-- Start rviz visualization with preset config -->
   <node pkg="rviz" type="rviz" name="rviz" args="-d $(find beta_bot_bringup)/rviz_cfg/outdoor_flight.rviz"/>
 
