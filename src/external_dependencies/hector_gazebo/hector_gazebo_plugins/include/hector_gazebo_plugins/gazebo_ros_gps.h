@@ -36,7 +36,8 @@
 #include <geometry_msgs/Vector3Stamped.h>
 #include <hector_gazebo_plugins/sensor_model.h>
 #include <hector_gazebo_plugins/update_timer.h>
-
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <nav_msgs/Odometry.h>
 #include <dynamic_reconfigure/server.h>
 #include <hector_gazebo_plugins/GNSSConfig.h>
 
@@ -55,7 +56,6 @@ protected:
   virtual void Update();
 
   typedef hector_gazebo_plugins::GNSSConfig GNSSConfig;
-  void dynamicReconfigureCallback(GNSSConfig &config, uint32_t level);
 
 private:
   /// \brief The parent World
@@ -65,10 +65,10 @@ private:
   physics::LinkPtr link;
 
   ros::NodeHandle* node_handle_;
-  ros::Publisher fix_publisher_;
+  ros::Publisher gps_pose_publisher_;
   ros::Publisher velocity_publisher_;
 
-  sensor_msgs::NavSatFix fix_;
+  nav_msgs::Odometry gps_pose_;
   geometry_msgs::Vector3Stamped velocity_;
 
   std::string namespace_;
