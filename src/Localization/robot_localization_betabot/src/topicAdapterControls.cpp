@@ -42,7 +42,7 @@ int main(int argc, char** argv){
   //PUBLICACIONES Y SUSCRIPCIONES
   ros::NodeHandle n;
   ros::Subscriber localization_sub = n.subscribe("/ground_truth/state", 50, localizationCallback);         /* Nombre del topic donde vamos a suscribirnos DEBERÍA SER /odometry/filtered/global */ 
-  ros::Subscriber imu_sub          = n.subscribe("/raw_imu3", 50, imuCallback);                            /* Nombre del topic donde vamos a suscribirnos */
+  ros::Subscriber imu_sub          = n.subscribe("/raw_imu", 50, imuCallback);                             /* Nombre del topic donde vamos a suscribirnos */
 
   ros::Publisher localization_pub = n.advertise<nav_msgs::Odometry>("/state", 50);                         /* Nombre del topic donde vamos a publicar */
   ros::Publisher imu_pub          = n.advertise<sensor_msgs::Imu>("/imu", 50);                             /* Nombre del topic donde vamos a publicar */

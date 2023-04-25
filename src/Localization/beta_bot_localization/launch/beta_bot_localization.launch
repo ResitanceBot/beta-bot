@@ -26,7 +26,7 @@
   <!-- IMU_FILTER_MADGWICK: FUSIÓN DE IMU 6DOF + MAGNETÓMETRO PARA DAR UN MENSAJE IMU 9DOF -->
   <node name="imu_filter_node" pkg="imu_filter_madgwick" type="imu_filter_node" output="screen">
   	<!-- Entradas -->
-  	<remap from="imu/data_raw" to="raw_imu3"/>           <!-- IMU propia -->
+  	<remap from="imu/data_raw" to="raw_imu"/>            <!-- IMU propia -->
   	<remap from="imu/mag" to="magnetic/converted"/>      <!-- Magnetómetro con su tipo de mensaje convertido a "sensor_msgs/MagneticField" por "topicAdapter.cpp" (no admite el tipo de mensaje obsoleto) -->
   	
   	<!-- Parámetros -->
