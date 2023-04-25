@@ -10,14 +10,14 @@
     <arg name="y" default="0.0"/>
     <arg name="z" default="5.0"/>
 
-    <arg name="use_ground_truth_for_tf" default="true" />
-    <arg name="use_ground_truth_for_control" default="true" />
+    <arg name="use_ground_truth_for_tf" default="false" />
+    <arg name="use_ground_truth_for_control" default="false" />
     <arg name="use_pose_estimation" if="$(arg use_ground_truth_for_control)" default="false"/>
     <arg name="use_pose_estimation" unless="$(arg use_ground_truth_for_control)" default="true"/>
 
     <arg name="world_frame" default="world"/>
     <!-- This should actually be "/world". See https://github.com/ros-simulation/gazebo_ros_pkgs/pull/324 -->
-    <arg name="base_link_frame" default="$(arg tf_prefix)/base_link"/>
+    <arg name="base_link_frame" default="base_link"/>
 
     <!-- send the robot XML to param server -->
     <param name="robot_description" command="$(find xacro)/xacro '$(arg model)' base_link_frame:=$(arg base_link_frame) world_frame:=$(arg world_frame)" />
@@ -45,15 +45,6 @@
         <param name="tf_prefix" value="$(arg tf_prefix)" if="$(arg use_ground_truth_for_tf)" />
         <param name="tf_prefix" value="$(arg tf_prefix)/ground_truth" unless="$(arg use_ground_truth_for_tf)" />
     </node>
-    <group if="$(arg use_pose_estimation)">
-        <node name="pose_estimation" pkg="hector_quadrotor_pose_estimation" type="hector_quadrotor_pose_estimation" output="screen">
-            <rosparam file="$(find hector_quadrotor_pose_estimation)/params/simulation.yaml" />
-            <param name="nav_frame" value="$(arg tf_prefix)/nav" />
-            <param name="publish_world_nav_transform" value="true" />
-            <param name="tf_prefix" value="$(arg tf_prefix)" unless="$(arg use_ground_truth_for_tf)" />
-            <param name="tf_prefix" value="$(arg tf_prefix)/pose_estimation" if="$(arg use_ground_truth_for_tf)" />
-        </node>
-    </group>
 
     <!-- spawn controller -->
     <group if="$(arg use_ground_truth_for_control)">

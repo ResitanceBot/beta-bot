@@ -21,7 +21,8 @@
 
             <collision>
                 <geometry>
-                    <box size="4 4 3"/>
+                    <!-- <box size="4 4 3"/> -->
+                    <mesh filename="package://beta_bot_description/meshes/taxi.dae" scale="0.5 0.5 0.5"/>
                 </geometry>
             </collision>
         </link>
