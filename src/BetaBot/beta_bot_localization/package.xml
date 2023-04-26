@@ -70,6 +70,15 @@
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>tf</exec_depend>
   <exec_depend>tf2</exec_depend>
+  <exec_depend>robot_localization</exec_depend>
+  <exec_depend>rtabmap_slam</exec_depend>
+  <exec_depend>rtabmap_odom</exec_depend>
+  <exec_depend>rtabmap_ros</exec_depend>
+  <exec_depend>rtabmap</exec_depend>
+  <exec_depend>octomap_server</exec_depend>
+  <exec_depend>imu_filter_madgwick</exec_depend>
+  <exec_depend>stereo_image_proc</exec_depend>
+  <exec_depend>stereo_msgs</exec_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
