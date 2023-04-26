@@ -8,7 +8,7 @@
 
     <arg name="x" default="0.0"/>
     <arg name="y" default="0.0"/>
-    <arg name="z" default="5.0"/>
+    <arg name="z" default="0.5"/>
 
     <arg name="use_ground_truth_for_tf" default="false" />
     <arg name="use_ground_truth_for_control" default="false" />
