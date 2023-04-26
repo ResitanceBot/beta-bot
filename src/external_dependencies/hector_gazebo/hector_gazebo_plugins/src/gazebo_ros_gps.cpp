@@ -176,7 +176,6 @@ void GazeboRosGps::Update()
   double dt = updateTimer.getTimeSinceLastUpdate().Double();
 
   ignition::math::Pose3d pose = link->WorldPose();
-  std::cout << "Pose del link base_link:" << pose << std::endl;
 
   //ignition::math::Vector3d velocity = velocity_error_model_(link->WorldLinearVel(), dt);
   //ignition::math::Vector3d position = position_error_model_(pose.Pos()); //,dt
@@ -192,7 +191,6 @@ void GazeboRosGps::Update()
   const double mean = 0.0;
   const double stddev = 3;
   auto dist = std::bind(std::normal_distribution<double>{mean, stddev},std::mt19937(std::random_device{}()));
-  std::cout << "Valor de la distribución gaussiana = " << dist() << std::endl;
   double poseX, poseY, poseZ;
   poseX = pose.X() + dist();
   poseY = pose.Y() + dist();
