@@ -9,9 +9,27 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   tf
   tf2
+  std_msgs
+  beacons_gazebo
+  pcl_ros
+  message_generation
 )
 
-catkin_package()
+find_package(Eigen3 REQUIRED)
+
+add_message_files(
+  FILES
+  IniLocalization.msg
+)
+
+generate_messages(
+   DEPENDENCIES
+   geometry_msgs
+ )
+
+ catkin_package(
+    CATKIN_DEPENDS  message_runtime
+)
 
 include_directories(
   include
@@ -20,5 +38,10 @@ include_directories(
 
 add_executable(topicAdapter src/topicAdapter/topicAdapter.cpp)
 target_link_libraries(topicAdapter ${catkin_LIBRARIES})
+
 add_executable(topicAdapterControls src/topicAdapter/topicAdapterControls.cpp)
 target_link_libraries(topicAdapterControls ${catkin_LIBRARIES})
+
+add_executable(gn_ini src/ini/Gauss_Newton_Algorithm.cpp)
+target_link_libraries(gn_ini ${catkin_LIBRARIES})
+add_dependencies(gn_ini beta_bot_localization_generate_messages_cpp)
