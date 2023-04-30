@@ -80,6 +80,9 @@
   <exec_depend>stereo_image_proc</exec_depend>
   <exec_depend>stereo_msgs</exec_depend>
 
+  <depend>beacons_gazebo</depend>
+  <build_depend>message_generation</build_depend>
+  <exec_depend>message_runtime</exec_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
