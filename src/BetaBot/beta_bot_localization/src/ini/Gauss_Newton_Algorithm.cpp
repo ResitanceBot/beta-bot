@@ -244,6 +244,8 @@ int main(int argc, char **argv)
 
   bool flagRes = false;
 
+  ros::Rate rate(50);
+
   ros::AsyncSpinner spinner(4);
   spinner.start();
 
@@ -283,9 +285,13 @@ int main(int argc, char **argv)
       msg.beacons.z = z;
 
       flagRes = true;
+
+      res_ini.publish(msg);
+      break;
     }
-    res_ini.publish(msg);
+    //res_ini.publish(msg);
     //ros::spinOnce();
+    rate.sleep();
   }
 
   return 0;
