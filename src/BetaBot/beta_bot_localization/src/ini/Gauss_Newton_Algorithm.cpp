@@ -7,8 +7,9 @@
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <math.h>
 #include <nav_msgs/Odometry.h>
-#include <sensor_msgs/MagneticField.h>
 #include <sensor_msgs/Imu.h>
+#include <sensor_msgs/MagneticField.h>
+
 
 // Subscriptores
 ros::Subscriber accelerometer;
@@ -39,7 +40,8 @@ double x, y, z, xini = 0, yini = 0, zini = 0, roll, pitch, yaw;
 double d1, d2, d3, d4, dx, dy, dz, e0, e;
 double xb1, yb1, zb1, xb2, yb2, zb2, xb3, yb3, zb3, xb4, yb4, zb4;
 double db1 = -1, db2 = -1, db3 = -1, db4 = -1;
-int contb1 = 0, contb2 = 0, contb3 = 0, contb4 = 0, contgps = 0, contbar = 0, contmag = 0, contacc = 0;
+int contb1 = 0, contb2 = 0, contb3 = 0, contb4 = 0, contgps = 0, contbar = 0,
+    contmag = 0, contacc = 0;
 bool contb[N_BALIZAS] = {false, false, false, false};
 
 Eigen::Matrix<double, 4, 3> J;
@@ -60,9 +62,10 @@ void accelerometer_Callback(const sensor_msgs::Imu &msg) {
     accX = accX / NUM_MUESTRAS;
     accY = accY / NUM_MUESTRAS;
     accZ = accZ / NUM_MUESTRAS;
-    roll = atan2(accX,(sqrt(pow(accY,2)+pow(accZ,2))));
-    pitch = atan2(accY,(sqrt(pow(accX,2)+pow(accZ,2))));
-    std::cout << "Acelerometro: Obtenidos roll: " << roll << "y pitch: " << pitch << std::endl;
+    roll = atan2(accX, (sqrt(pow(accY, 2) + pow(accZ, 2))));
+    pitch = atan2(accY, (sqrt(pow(accX, 2) + pow(accZ, 2))));
+    std::cout << "Acelerometro: Obtenidos roll: " << roll
+              << "y pitch: " << pitch << std::endl;
     accelerometer.shutdown();
   }
 }
@@ -76,7 +79,7 @@ void magnetometer_Callback(const sensor_msgs::MagneticField &msg) {
   if (contmag >= NUM_MUESTRAS) {
     compX = compX / NUM_MUESTRAS;
     compY = compY / NUM_MUESTRAS;
-    yaw = atan2(compY,compX);
+    yaw = atan2(compY, compX);
     std::cout << "Magnetometro: Obtenido yaw: " << yaw << std::endl;
     magnetometer.shutdown();
   }
@@ -314,7 +317,6 @@ int main(int argc, char **argv) {
       std::cout << "pitch: " << pitch << std::endl;
       std::cout << "yaw: " << yaw << std::endl;
       std::cout << std::endl;
-
 
       // PUBLICACION RESULTADOS
       msg.gps_bar.x = xini;
