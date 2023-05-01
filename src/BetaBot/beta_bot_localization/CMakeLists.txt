@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(beta_bot_localization)
 
+set(CMAKE_BUILD_TYPE Debug)
+
 find_package(
   catkin REQUIRED
   COMPONENTS geometry_msgs
@@ -35,7 +37,8 @@ add_executable(gn_ini src/ini/Gauss_Newton_Algorithm.cpp)
 target_link_libraries(gn_ini ${catkin_LIBRARIES})
 add_dependencies(gn_ini beta_bot_localization_generate_messages_cpp)
 
-# add_executable(ekf_node src/ekf_node/ros_wrapper.cpp src/ekf_node/ekf.cpp)
-# add_dependencies(ekf_node ${${PROJECT_NAME}_EXPORTED_TARGETS}
-# ${catkin_EXPORTED_TARGETS}) target_link_libraries(ekf_node
-# ${catkin_LIBRARIES})
+add_executable(ekf_node src/ekf_node/ros_wrapper.cpp src/ekf_node/ekf.cpp)
+add_dependencies(
+  ekf_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
+  beta_bot_localization_generate_messages_cpp)
+target_link_libraries(ekf_node ${catkin_LIBRARIES})
