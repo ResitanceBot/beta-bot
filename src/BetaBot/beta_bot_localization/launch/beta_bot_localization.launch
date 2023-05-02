@@ -7,6 +7,9 @@
    <!-- LLAMAMOS AL NODO "topicAdapterControls" PARA QUE DECIDA QUÉ LOCALIZACIÓN USA EL CONTROL: GROUND TRUTH O LOCALIZACIÓN INTEGRADA. REPUBLICA EN /imu Y /state -->
    <node name="topicAdapterControls" pkg="beta_bot_localization" type="topicAdapterControls" output="screen"/>
 
-   <!-- Colocar aquí el nodo de localización desarrollado por nosotros -->
+
+   <!-- EKF Propio  -->
+
+
 
 </launch>

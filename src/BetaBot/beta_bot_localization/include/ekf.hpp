@@ -3,20 +3,26 @@
 
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
-// #include <iostream>
 
 struct pose {
-  double x;
-  double y;
-  double z;
-  double r;
-  double p;
-  double yaw;
+  double x{0};
+  double y{0};
+  double z{0};
+  double r{0};
+  double p{0};
+  double yaw{0};
 };
 
 constexpr double desv_tip_sigma_inicial{1};
-constexpr double desv_tip_R{1};
-constexpr double desv_tip_Q{5};
+constexpr double desv_tip_R_position{1};
+constexpr double desv_tip_R_vel{1};
+constexpr double desv_tip_R_orientation{1};
+constexpr double desv_tip_Q_gps{3};
+constexpr double desv_tip_Q_bar{0.1};
+constexpr double desv_tip_Q_or_rp{0.005};   // aprox
+constexpr double desv_tip_Q_or_yaw{1.3e-2}; // aprox
+constexpr double desv_tip_Q_IMU{0.005};
+constexpr double desv_tip_Q_mag{1.3e-2};
 
 class ExtendedKalmanFilter {
 public:

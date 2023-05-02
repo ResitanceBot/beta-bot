@@ -99,6 +99,9 @@ public:
 
   void callbackBarometer(
       const geometry_msgs::PoseWithCovarianceStampedConstPtr msg) {
+    if (sensorValues._barZ.has_value()) {
+      sensorValues._barZ_ant = sensorValues._barZ;
+    }
     sensorValues._barZ = msg->pose.pose.position.z;
     if (sensorValues.checkValidUpdateValues() && ekf.matrixInitialized) {
       ekf.EKFUpdate(sensorValues._gpsX.value(), sensorValues._gpsY.value(),
