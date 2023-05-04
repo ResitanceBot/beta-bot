@@ -23,7 +23,8 @@
   <node name="rssi_to_distance" pkg="beacons_gazebo" type="rssi_to_distance" output="screen"/>
 
   <!-- LANZAMIENTO DE LA ODOMETRÍA VISUAL POR CÁMARA ESTÉREO -->
-  <!-- <include file="$(find beta_bot_localization)/launch/stereo_odometry.launch"/> -->
+  <!-- <include file="$(find beta_bot_localization)/launch/stereo_odometry.launch" /> -->
+  <node name="stereo_odometry_launcher" pkg="beta_bot_localization" type="stereoLaunch.sh" output="screen"/>
 
 
   <!-- OCTOMAP_SERVER: NODO PARA CARGAR MAPAS 3D EN LA SIMULACIÓN. EN NUESTRO CASO, EL global_map PARA VISUALIZACIÓN -->
