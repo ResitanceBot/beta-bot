@@ -4,10 +4,8 @@
    <!-- LLAMAMOS AL NODO "topicAdapter" PARA CONVERTIR LA ALTURA POR SÓNAR Y EL MAGNETÓMETRO A LOS TIPOS DE DATO ADECUADOS -->
    <node name="topicAdapter" pkg="beta_bot_localization" type="topicAdapter" output="screen"/>
 
-
    <!-- LLAMAMOS AL NODO "topicAdapterControls" PARA QUE DECIDA QUÉ LOCALIZACIÓN USA EL CONTROL: GROUND TRUTH O LOCALIZACIÓN INTEGRADA. REPUBLICA EN /imu Y /state -->
    <node name="topicAdapterControls" pkg="beta_bot_localization" type="topicAdapterControls" output="screen"/>
-
 
    <!-- IMU_FILTER_MADGWICK: FUSIÓN DE IMU 6DOF + MAGNETÓMETRO PARA DAR UN MENSAJE IMU 9DOF -->
    <node name="imu_filter_node" pkg="imu_filter_madgwick" type="imu_filter_node" output="screen">
