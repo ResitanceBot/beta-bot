@@ -18,7 +18,7 @@ find_package(
 
 find_package(Eigen3 REQUIRED)
 
-add_message_files(FILES IniLocalization.msg)
+add_message_files(FILES IniLocalization.msg PoseRPYWithCovariance.msg)
 
 generate_messages(DEPENDENCIES geometry_msgs)
 
@@ -42,3 +42,9 @@ add_dependencies(
   ekf_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
   beta_bot_localization_generate_messages_cpp)
 target_link_libraries(ekf_node ${catkin_LIBRARIES})
+
+add_executable(gt_pub src/ground_truth_publisher/ground_truth_publisher.cpp)
+add_dependencies(
+  gt_pub ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
+  beta_bot_localization_generate_messages_cpp)
+target_link_libraries(gt_pub ${catkin_LIBRARIES})

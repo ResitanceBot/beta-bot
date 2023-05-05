@@ -143,7 +143,7 @@ public:
     for (int i = 0; i < 36; i++) {
       msgPoseRPY.covariance[i] = PoseEstimatedByEKF.covariance[i];
     }
-    _poseRPY_pub.publish(msgPoseRPY);
+    _pose_pub.publish(msgPoseRPY);
 
     geometry_msgs::PoseWithCovarianceStamped msgPose;
     msgPose.header.frame_id = "/world";
@@ -161,7 +161,6 @@ public:
     for (int i = 0; i < 36; i++) {
       msgPose.pose.covariance[i] = PoseEstimatedByEKF.covariance[i];
     }
-    _pose_pub.publish(msgPose);
   }
 
   // should be private, only for debug purposes

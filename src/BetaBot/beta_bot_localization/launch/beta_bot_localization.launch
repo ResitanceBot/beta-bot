@@ -8,8 +8,11 @@
    <node name="topicAdapterControls" pkg="beta_bot_localization" type="topicAdapterControls" output="screen"/>
 
 
-   <!-- EKF Propio  -->
+   <!-- LLAMAMOS AL NODO "ground_truth_pub" PARA PUBLICAR GROUND TRUTH EN ANG EULER  -->
+   <node name="ground_truth_pub" pkg="beta_bot_localization" type="gt_pub" output="screen"/>
 
+   <!-- LLAMAMOS AL EKF PROPIO -->
+   <node name="ekf_principal" pkg="beta_bot_localization" type="ekf_node" output="screen"/>
 
 
 </launch>

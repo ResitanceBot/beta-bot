@@ -23,15 +23,15 @@ void ExtendedKalmanFilter::initMatrix(pose InitialPose) {
       0, desv_tip_R_orientation * desv_tip_R_orientation, 0, 0, 0, 0, 0, 0, 0,
       0, 0, desv_tip_R_orientation * desv_tip_R_orientation;
 
-  _Q << desv_tip_Q_gps * desv_tip_Q_gps, 0, 0, 0, 0, 0, 0, 0, 0;
-  0, desv_tip_Q_gps *desv_tip_Q_gps, 0, 0, 0, 0, 0, 0, 0;
-  0, 0, desv_tip_Q_bar *desv_tip_Q_bar, 0, 0, 0, 0, 0, 0;
-  0, 0, 0, desv_tip_Q_gps *desv_tip_Q_gps, 0, 0, 0, 0, 0;
-  0, 0, 0, 0, desv_tip_Q_gps *desv_tip_Q_gps, 0, 0, 0, 0;
-  0, 0, 0, 0, 0, desv_tip_Q_bar *desv_tip_Q_bar, 0, 0, 0;
-  0, 0, 0, 0, 0, 0, desv_tip_Q_or_rp *desv_tip_Q_or_rp, 0, 0;
-  0, 0, 0, 0, 0, 0, 0, desv_tip_Q_or_rp *desv_tip_Q_or_rp, 0;
-  0, 0, 0, 0, 0, 0, 0, 0, desv_tip_Q_or_yaw *desv_tip_Q_or_yaw;
+  _Q << desv_tip_Q_gps * desv_tip_Q_gps, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      desv_tip_Q_gps * desv_tip_Q_gps, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      desv_tip_Q_bar * desv_tip_Q_bar, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      desv_tip_Q_gps * desv_tip_Q_gps, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      desv_tip_Q_gps * desv_tip_Q_gps, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      desv_tip_Q_bar * desv_tip_Q_bar, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      desv_tip_Q_or_rp * desv_tip_Q_or_rp, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      desv_tip_Q_or_rp * desv_tip_Q_or_rp, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      desv_tip_Q_or_yaw * desv_tip_Q_or_yaw;
 
   matrixInitialized = true;
 
