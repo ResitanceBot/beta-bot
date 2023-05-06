@@ -25,7 +25,7 @@
     <node name="window_teleop" pkg="beta_bot_teleop" type="ui_hector_quad.py" output="screen"/>
   </group>
   <group if="$(eval teleop_mode_selection == 'keypad')">
-    <node name="keypad_teleop" pkg="beta_bot_teleop" type="joy_to_cmd_vel" output="screen"/>
+    <include file="$(find beta_bot_teleop)/launch/control_mando.launch"/>
   </group>
 
   <!-- Launch RSSI Beacons -->

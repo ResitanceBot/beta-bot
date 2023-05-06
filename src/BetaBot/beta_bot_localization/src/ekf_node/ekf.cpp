@@ -1,4 +1,5 @@
 #include "ekf.hpp"
+#include "ros/ros.h"
 
 void ExtendedKalmanFilter::initMatrix(pose InitialPose) {
 
@@ -72,9 +73,10 @@ void ExtendedKalmanFilter::EKFUpdate(double xGPS, double yGPS, double zBar,
   const double T = currentTimeStamp - _lastUpdTimeStamp;
   Eigen::Matrix<double, 9, 1> z;
   z << xGPS, yGPS, zBar, xGPS_ant, yGPS_ant, zBar_ant,
-      atan2(LinAccX, sqrt(LinAccY * LinAccY + LinAccZ * LinAccZ)),
+      atan2(LinAccX, sqrt(LinAccY * LinAccY + LinAccZ * LinAccZ)), // ERRONEA
       atan2(LinAccY, sqrt(LinAccX * LinAccX + LinAccZ * LinAccZ)),
       atan2(-magY, magX);
+  ROS_INFO_STREAM("ROLL: " << z(6));
   Eigen::Matrix<double, 9, 1> h;
   h << _nu(0), _nu(1), _nu(2), _nu(0) - T * _nu(3), _nu(1) - T * _nu(4),
       _nu(2) - T * _nu(5), _nu(6), _nu(7), _nu(8);
