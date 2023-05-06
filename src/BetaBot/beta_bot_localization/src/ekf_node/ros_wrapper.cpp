@@ -8,6 +8,7 @@
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/MagneticField.h>
 #include <tf/tf.h>
+#include <tf/transform_broadcaster.h>
 
 class SensorMeasurementsMaintainer {
 public:
@@ -125,9 +126,9 @@ public:
     InitialPose.x = msg.gps_bar.x;
     InitialPose.y = msg.gps_bar.y;
     InitialPose.z = msg.gps_bar.z;
-    InitialPose.r = 0;
-    InitialPose.p = 0;
-    InitialPose.yaw = 0;
+    InitialPose.r = msg.orientation.x;
+    InitialPose.p = msg.orientation.y;
+    InitialPose.yaw = msg.orientation.z;
     _ekf.initMatrix(InitialPose);
   }
 
@@ -146,22 +147,30 @@ public:
     _poseRPY_pub.publish(msgPoseRPY);
 
     geometry_msgs::PoseWithCovarianceStamped msgPose;
-    msgPose.header.frame_id = "/world";
+    msgPose.header.frame_id = "world";
     msgPose.header.stamp = ros::Time::Time::now();
     msgPose.pose.pose.position.x = PoseEstimatedByEKF.x;
     msgPose.pose.pose.position.y = PoseEstimatedByEKF.y;
     msgPose.pose.pose.position.z = PoseEstimatedByEKF.z;
-    tf2::Quaternion ori;
+    tf::Quaternion ori;
     ori.setRPY(PoseEstimatedByEKF.r, PoseEstimatedByEKF.p,
                PoseEstimatedByEKF.yaw);
     ori.normalize();
     msgPose.pose.pose.orientation.x = ori.x();
     msgPose.pose.pose.orientation.y = ori.y();
     msgPose.pose.pose.orientation.z = ori.z();
+    msgPose.pose.pose.orientation.w = ori.w();
     for (int i = 0; i < 36; i++) {
       msgPose.pose.covariance[i] = PoseEstimatedByEKF.covariance[i];
     }
     _pose_pub.publish(msgPose);
+
+    tf::Transform transform;
+    transform.setOrigin(tf::Vector3(PoseEstimatedByEKF.x, PoseEstimatedByEKF.y,
+                                    PoseEstimatedByEKF.z));
+    transform.setRotation(ori);
+    _transform_broadcaster.sendTransform(tf::StampedTransform(
+        transform, ros::Time::now(), "world", "base_link"));
   }
 
   // should be private, only for debug purposes
@@ -176,6 +185,7 @@ private:
   ros::Subscriber init_sub;
   ros::Publisher _pose_pub;
   ros::Publisher _poseRPY_pub;
+  tf::TransformBroadcaster _transform_broadcaster;
 };
 
 int main(int argc, char **argv) {
@@ -186,7 +196,7 @@ int main(int argc, char **argv) {
   EkfROSWrapper ekf_ros_wrapper(nh);
 
   // Debug msg
-  ros::Rate rate(0.5);
+  ros::Rate rate(50);
   while (ros::ok()) {
     ekf_ros_wrapper.pubPose();
     rate.sleep();

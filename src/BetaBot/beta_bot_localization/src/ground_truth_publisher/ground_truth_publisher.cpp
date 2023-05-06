@@ -1,4 +1,4 @@
-#include "beta_bot_localization/PoseRPY.h"
+#include "beta_bot_localization/PoseRPYWithCovariance.h"
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
 #include <tf/tf.h>
@@ -8,7 +8,7 @@ public:
   ROSNode(ros::NodeHandle nh) {
     _gt_sub =
         nh.subscribe("/ground_truth/state", 10, &ROSNode::callbackGT, this);
-    _gt_pub = nh.advertise<beta_bot_localization::PoseRPY>(
+    _gt_pub = nh.advertise<beta_bot_localization::PoseRPYWithCovariance>(
         "/ground_truth/poseRPY", 10);
   }
 
@@ -31,7 +31,7 @@ public:
 private:
   ros::Subscriber _gt_sub;
   ros::Publisher _gt_pub;
-  beta_bot_localization::PoseRPY _gtTfMsg;
+  beta_bot_localization::PoseRPYWithCovariance _gtTfMsg;
 };
 
 int main(int argc, char **argv) {

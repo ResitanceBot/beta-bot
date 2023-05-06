@@ -15,9 +15,9 @@ struct pose {
 };
 
 constexpr double desv_tip_sigma_inicial{1};
-constexpr double desv_tip_R_position{1};
+constexpr double desv_tip_R_position{0.1};
 constexpr double desv_tip_R_vel{1};
-constexpr double desv_tip_R_orientation{1};
+constexpr double desv_tip_R_orientation{0.1};
 constexpr double desv_tip_Q_gps{3};
 constexpr double desv_tip_Q_bar{0.1};
 constexpr double desv_tip_Q_or_rp{0.005};   // aprox
