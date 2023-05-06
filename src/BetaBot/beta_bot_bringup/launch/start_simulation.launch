@@ -6,6 +6,7 @@
   <arg name="world_name" default="small_city"/>
   <arg name="height" default="15" />
   <arg name="use_beta_bot_localization" default="true"/>
+  <arg name="teleop_mode_selection" default="window"/>
 
   <!-- Start Gazebo with wg world running in (max) realtime -->
   <include file="$(find beta_bot_gazebo)/launch/load_world.launch">
@@ -18,6 +19,14 @@
 
   <!-- Spawn simulated quadrotor uav -->
   <include file="$(find beta_bot_gazebo)/launch/spawn_quadrotor.launch"/>
+
+  <!-- Activate manual control -->
+  <group if="$(eval teleop_mode_selection == 'window')">
+    <node name="window_teleop" pkg="beta_bot_teleop" type="ui_hector_quad.py" output="screen"/>
+  </group>
+  <group if="$(eval teleop_mode_selection == 'keypad')">
+    <node name="keypad_teleop" pkg="beta_bot_teleop" type="joy_to_cmd_vel" output="screen"/>
+  </group>
 
   <!-- Launch RSSI Beacons -->
   <node name="rssi_to_distance" pkg="beacons_gazebo" type="rssi_to_distance" output="screen"/>

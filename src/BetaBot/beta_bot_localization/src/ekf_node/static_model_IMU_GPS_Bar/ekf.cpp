@@ -34,11 +34,6 @@ void ExtendedKalmanFilter::initMatrix(pose InitialPose) {
       desv_tip_Q_or_yaw * desv_tip_Q_or_yaw;
 
   matrixInitialized = true;
-
-  // std::cout << "x: " << _nu(0) << ",y: " << _nu(1) << ",z: " << _nu(2)
-  //           << std::endl;
-  // std::cout << "r: " << _nu(6) << ",p: " << _nu(7) << ",yaw: " << _nu(8)
-  //           << std::endl;
 }
 
 void ExtendedKalmanFilter::EKFPrediction(double LinAccX, double LinAccY,
@@ -47,11 +42,7 @@ void ExtendedKalmanFilter::EKFPrediction(double LinAccX, double LinAccY,
                                          double currentTimeStamp) {
 
   const double T = currentTimeStamp - _lastPredTimeStamp;
-  // _G << 1, 0, 0, T, 0, 0, 0, 0, 0, 0, 1, 0, 0, T, 0, 0, 0, 0, 0, 0, 1, 0, 0,
-  // T,
-  //     0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
-  //     0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
-  //     0, 0, 0, 0, 0, 0, 0, 0, 1;
+
   _G << Eigen::Matrix<double, 9, 9>::Identity();
 
   _nu(0) = _nu(0);
