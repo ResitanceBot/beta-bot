@@ -10,6 +10,12 @@
     <include>
       <uri>model://ground_plane</uri>
     </include>
+    
+    <physics name='default_physics' default='0' type='ode'>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+    </physics>
 
     <plugin name="beacons_sync_world_plugin" filename="libbeacons_sync_world_plugin.so">
       <update_rate>60</update_rate>
