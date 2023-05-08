@@ -20,7 +20,8 @@ public:
     return (_AccX.has_value() && _AccY.has_value() && _AccZ.has_value() &&
             _gpsX.has_value() && _gpsY.has_value() && _gpsX_ant.has_value() &&
             _gpsY_ant.has_value() && _barZ.has_value() &&
-            _barZ_ant.has_value() && _magX.has_value() && _magY.has_value());
+            _barZ_ant.has_value() && _magX.has_value() && _magY.has_value() &&
+            _magZ.has_value());
   }
   boost::optional<double> _AccX;
   boost::optional<double> _AccY;
@@ -36,6 +37,7 @@ public:
   boost::optional<double> _barZ_ant;
   boost::optional<double> _magX;
   boost::optional<double> _magY;
+  boost::optional<double> _magZ;
 };
 
 class EkfROSWrapper {
@@ -73,15 +75,18 @@ public:
   void callbackMag(const sensor_msgs::MagneticFieldConstPtr msg) {
     sensorValues._magX = msg->magnetic_field.x;
     sensorValues._magY = msg->magnetic_field.y;
-    if (sensorValues.checkValidUpdateValues() && _ekf.matrixInitialized) {
-      _ekf.EKFUpdate(sensorValues._gpsX.value(), sensorValues._gpsY.value(),
-                     sensorValues._barZ.value(), sensorValues._gpsX_ant.value(),
-                     sensorValues._gpsY_ant.value(),
-                     sensorValues._barZ_ant.value(), sensorValues._AccX.value(),
-                     sensorValues._AccY.value(), sensorValues._AccZ.value(),
-                     sensorValues._magX.value(), sensorValues._magY.value(),
-                     msg->header.stamp.toSec());
-    }
+    sensorValues._magZ = msg->magnetic_field.z;
+    // if (sensorValues.checkValidUpdateValues() && _ekf.matrixInitialized) {
+    //   _ekf.EKFUpdate(sensorValues._gpsX.value(), sensorValues._gpsY.value(),
+    //                  sensorValues._barZ.value(),
+    //                  sensorValues._gpsX_ant.value(),
+    //                  sensorValues._gpsY_ant.value(),
+    //                  sensorValues._barZ_ant.value(),
+    //                  sensorValues._AccX.value(), sensorValues._AccY.value(),
+    //                  sensorValues._AccZ.value(), sensorValues._magX.value(),
+    //                  sensorValues._magY.value(), sensorValues._magZ.value(),
+    //                  msg->header.stamp.toSec());
+    // }
   }
 
   void callbackGPS(const nav_msgs::OdometryConstPtr msg) {
@@ -100,7 +105,7 @@ public:
                      sensorValues._barZ_ant.value(), sensorValues._AccX.value(),
                      sensorValues._AccY.value(), sensorValues._AccZ.value(),
                      sensorValues._magX.value(), sensorValues._magY.value(),
-                     msg->header.stamp.toSec());
+                     sensorValues._magZ.value(), msg->header.stamp.toSec());
     }
   }
 
@@ -110,15 +115,17 @@ public:
       sensorValues._barZ_ant = sensorValues._barZ;
     }
     sensorValues._barZ = msg->pose.pose.position.z;
-    if (sensorValues.checkValidUpdateValues() && _ekf.matrixInitialized) {
-      _ekf.EKFUpdate(sensorValues._gpsX.value(), sensorValues._gpsY.value(),
-                     sensorValues._barZ.value(), sensorValues._gpsX_ant.value(),
-                     sensorValues._gpsY_ant.value(),
-                     sensorValues._barZ_ant.value(), sensorValues._AccX.value(),
-                     sensorValues._AccY.value(), sensorValues._AccZ.value(),
-                     sensorValues._magX.value(), sensorValues._magY.value(),
-                     msg->header.stamp.toSec());
-    }
+    // if (sensorValues.checkValidUpdateValues() && _ekf.matrixInitialized) {
+    //   _ekf.EKFUpdate(sensorValues._gpsX.value(), sensorValues._gpsY.value(),
+    //                  sensorValues._barZ.value(),
+    //                  sensorValues._gpsX_ant.value(),
+    //                  sensorValues._gpsY_ant.value(),
+    //                  sensorValues._barZ_ant.value(),
+    //                  sensorValues._AccX.value(), sensorValues._AccY.value(),
+    //                  sensorValues._AccZ.value(), sensorValues._magX.value(),
+    //                  sensorValues._magY.value(), sensorValues._magZ.value(),
+    //                  msg->header.stamp.toSec());
+    // }
   }
 
   void callbackInit(const beta_bot_localization::IniLocalization msg) {

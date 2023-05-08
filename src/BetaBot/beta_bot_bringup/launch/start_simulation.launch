@@ -4,7 +4,8 @@
 
   <arg name="spawn_double" default="false"/>
   <arg name="world_name" default="small_city"/>
-  <arg name="height" default="15" />
+  <arg name="beacons_height" default="15" />
+  <arg name="robot_height" default="0.5" />
   <arg name="use_beta_bot_localization" default="true"/>
   <arg name="teleop_mode_selection" default="window"/>
 
@@ -14,11 +15,13 @@
   </include>
 
   <include file="$(find beacons_gazebo)/launch/spawn_beacons.launch">
-    <arg name="height" default="$(arg height)" />
+    <arg name="height" default="$(arg beacons_height)" />
   </include>
 
   <!-- Spawn simulated quadrotor uav -->
-  <include file="$(find beta_bot_gazebo)/launch/spawn_quadrotor.launch"/>
+  <include file="$(find beta_bot_gazebo)/launch/spawn_quadrotor.launch">
+    <arg name="z" default="$(arg robot_height)"/>
+  </include>
 
   <!-- Activate manual control -->
   <group if="$(eval teleop_mode_selection == 'window')">

@@ -67,16 +67,24 @@ void ExtendedKalmanFilter::EKFUpdate(double xGPS, double yGPS, double zBar,
                                      double xGPS_ant, double yGPS_ant,
                                      double zBar_ant, double LinAccX,
                                      double LinAccY, double LinAccZ,
-                                     double magX, double magY,
+                                     double magX, double magY, double magZ,
                                      double currentTimeStamp) {
 
   const double T = currentTimeStamp - _lastUpdTimeStamp;
   Eigen::Matrix<double, 9, 1> z;
+  double accEstimatedRoll =
+      atan2(LinAccY, sqrt(LinAccX * LinAccX + LinAccZ * LinAccZ));
+  double accEstimatedPitch =
+      atan2(-LinAccX, sqrt(LinAccY * LinAccY + LinAccZ * LinAccZ));
   z << xGPS, yGPS, zBar, xGPS_ant, yGPS_ant, zBar_ant,
-      atan2(LinAccX, sqrt(LinAccY * LinAccY + LinAccZ * LinAccZ)), // ERRONEA
-      atan2(LinAccY, sqrt(LinAccX * LinAccX + LinAccZ * LinAccZ)),
-      atan2(-magY, magX);
+      accEstimatedRoll,  // REVIEWED (OK SUPOSSING STATIC)
+      accEstimatedPitch, // REVIEWED (OK SUPOSSING STATIC)
+      atan2(cos(accEstimatedRoll) * -magY - sin(accEstimatedRoll) * magZ,
+            cos(accEstimatedPitch) * magX + sin(accEstimatedRoll) * magY +
+                cos(accEstimatedRoll) * sin(accEstimatedPitch) * magZ); // WRONG
   ROS_INFO_STREAM("ROLL: " << z(6));
+  ROS_INFO_STREAM("PITCH: " << z(7));
+  ROS_INFO_STREAM("YAW: " << z(8));
   Eigen::Matrix<double, 9, 1> h;
   h << _nu(0), _nu(1), _nu(2), _nu(0) - T * _nu(3), _nu(1) - T * _nu(4),
       _nu(2) - T * _nu(5), _nu(6), _nu(7), _nu(8);

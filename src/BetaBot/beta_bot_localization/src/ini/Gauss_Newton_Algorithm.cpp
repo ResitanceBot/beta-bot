@@ -10,7 +10,6 @@
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/MagneticField.h>
 
-
 // Subscriptores
 ros::Subscriber accelerometer;
 ros::Subscriber magnetometer;
@@ -62,8 +61,8 @@ void accelerometer_Callback(const sensor_msgs::Imu &msg) {
     accX = accX / NUM_MUESTRAS;
     accY = accY / NUM_MUESTRAS;
     accZ = accZ / NUM_MUESTRAS;
-    roll = atan2(accX, (sqrt(pow(accY, 2) + pow(accZ, 2))));
-    pitch = atan2(accY, (sqrt(pow(accX, 2) + pow(accZ, 2))));
+    roll = atan2(accY, sqrt(accX * accX + accZ * accZ));
+    pitch = atan2(accX, sqrt(accY * accY + accZ * accZ));
     std::cout << "Acelerometro: Obtenidos roll: " << roll
               << "y pitch: " << pitch << std::endl;
     accelerometer.shutdown();

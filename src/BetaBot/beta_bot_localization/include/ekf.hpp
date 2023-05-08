@@ -17,12 +17,9 @@ struct pose {
 constexpr double desv_tip_sigma_inicial{1};
 constexpr double desv_tip_R_position{0.1};
 constexpr double desv_tip_R_vel{1};
-// constexpr double desv_tip_R_orientation{0.000001};
 constexpr double desv_tip_R_orientation{0.1};
 constexpr double desv_tip_Q_gps{3};
 constexpr double desv_tip_Q_bar{0.1};
-// constexpr double desv_tip_Q_or_rp{500};     // aprox
-// constexpr double desv_tip_Q_or_yaw{1.3e-2}; // aprox
 constexpr double desv_tip_Q_or_rp{0.005};   // aprox
 constexpr double desv_tip_Q_or_yaw{1.3e-2}; // aprox
 constexpr double desv_tip_Q_IMU{0.005};
@@ -37,11 +34,13 @@ public:
   void EKFUpdate(double xGPS, double yGPS, double zBar, double xGPS_ant,
                  double yGPS_ant, double zBar_ant, double LinAccX,
                  double LinAccY, double LinAccZ, double magX, double magY,
-                 double currentTimeStamp);
+                 double magZ, double currentTimeStamp);
   inline pose GetEstimatedPose() {
     pose Pose;
     Pose.x = _nu(0);
+    // Pose.x = 0;
     Pose.y = _nu(1);
+    // Pose.y = 0;
     Pose.z = _nu(2);
     Pose.r = _nu(6);
     Pose.p = _nu(7);
