@@ -57,8 +57,10 @@ int main(int argc, char **argv)
   nombreFile = argv[1];
 
   // Apertura de fichero
-  std::ofstream ficheroDatosExp("//home/aglora/beta-bot/src/BetaBot/beta_bot_experiments/tests/" + nombreFile + ".txt", std::ios::app); // fichero datos experimento en formato CSV
-  //std::ofstream ficheroDatosExp("//home/aglora/beta-bot/src/BetaBot/beta_bot_experiments/tests/" + nombreFile + ".txt", std::ios::app); // fichero datos experimento en formato CSV
+  std::string homepath = std::getenv("HOME");
+  std::cout << homepath << std::endl;
+
+  std::ofstream ficheroDatosExp(homepath + "/beta-bot/src/BetaBot/beta_bot_experiments/tests/"+ nombreFile + ".txt", std::ios::app); // fichero datos experimento en formato CSV
 
   while (n.ok())
   {
