@@ -6,15 +6,11 @@ find_package(catkin REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS 
   roscpp
-  std_msgs
-  message_generation
+  beta_bot_localization
   )
 
-add_message_files(FILES PoseRPYWithCovariance.msg)
-
-generate_messages(DEPENDENCIES std_msgs)
-
-catkin_package(CATKIN_DEPENDS message_runtime)
+ #catkin_package(CATKIN_DEPENDS message_runtime)
+ catkin_package(CATKIN_DEPENDS)
 
 include_directories(
 # include
@@ -24,5 +20,5 @@ include_directories(
 add_executable(experiments src/experiments.cpp)
 add_dependencies(
   experiments ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
-  beta_bot_experiments_generate_messages_cpp)
+  beta_bot_localization_generate_messages_cpp)
 target_link_libraries(experiments ${catkin_LIBRARIES})

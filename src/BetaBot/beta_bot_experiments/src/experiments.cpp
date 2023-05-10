@@ -58,6 +58,7 @@ int main(int argc, char **argv)
 
   // Apertura de fichero
   std::ofstream ficheroDatosExp("//home/aglora/beta-bot/src/BetaBot/beta_bot_experiments/tests/" + nombreFile + ".txt", std::ios::app); // fichero datos experimento en formato CSV
+  //std::ofstream ficheroDatosExp("//home/aglora/beta-bot/src/BetaBot/beta_bot_experiments/tests/" + nombreFile + ".txt", std::ios::app); // fichero datos experimento en formato CSV
 
   while (n.ok())
   {
