@@ -31,10 +31,9 @@ public:
                      double AngVelX, double AngVelY, double AngVelZ,
                      double currentTimeStamp);
   void EKFUpdate(double dist1, double dist2, double dist3,              // Changes compared to "ekf_node" version         
-                 double dist4, double dist5, double dist1_ant,
-                 double dist2_ant, double dist3_ant, double dist4_ant,
-                 double dist5_ant, double magX, double magY, 
-                 double magZ, double LinAccX, double LinAccY,
+                 double dist4, double dist1_ant, double dist2_ant, 
+                 double dist3_ant, double dist4_ant, double magX, 
+                 double magY, double magZ, double LinAccX, double LinAccY,
                  double LinAccZ, double currentTimeStamp);
   inline pose GetEstimatedPose() {
     pose Pose;
@@ -52,7 +51,7 @@ public:
   bool matrixInitialized{false};
 
   // Store the beacon's position of the beacon i
-  inline void SetBeaconPosition(xb,yb,zb,i){
+  inline void SetBeaconPosition(double xb, double yb, double zb, int i){
     if(i>0 && i<5){
       _xb[i-1] = xb;
       _yb[i-1] = yb;
@@ -62,20 +61,19 @@ public:
 
 private:
   // Matrix
-  Eigen::Matrix<double, 9, 1>
-      _nu; // variable state vector: [x, y, z, vx, vy, vz, roll, pitch, yaw]'
+  Eigen::Matrix<double, 9, 1> _nu; // variable state vector: [x, y, z, vx, vy, vz, roll, pitch, yaw]'
   Eigen::Matrix<double, 9, 9> _sigma;
   Eigen::Matrix<double, 9, 9> _G;
   Eigen::Matrix<double, 9, 9> _R;
-  Eigen::Matrix<double, 13, 9> _H;
-  Eigen::Matrix<double, 13, 13> _Q;
+  Eigen::Matrix<double, 11, 9> _H;
+  Eigen::Matrix<double, 11, 11> _Q;
 
   // Internal variables
   double _lastPredTimeStamp{0};
   double _lastUpdTimeStamp{0};
 
   // Beacons' position
-  double _xb[5], _yb[5], _zb[5];
+  double _xb[4], _yb[4], _zb[4];
 };
 
 #endif

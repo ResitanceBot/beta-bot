@@ -1,5 +1,7 @@
 #include "beta_bot_localization/IniLocalization.h"
 #include "beta_bot_localization/PoseRPYWithCovariance.h"
+#include <beta_bot_localization/IniLocalization.h>
+#include "std_msgs/Float64.h"
 #include "ekf.hpp"
 #include <boost/optional.hpp>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -9,6 +11,7 @@
 #include <sensor_msgs/MagneticField.h>
 #include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
+#include "beacons_gazebo/BeaconSimPose.h"
 
 class SensorMeasurementsMaintainer {
 public:
@@ -18,23 +21,26 @@ public:
   }
   inline bool checkValidUpdateValues() {
     return (_AccX.has_value() && _AccY.has_value() && _AccZ.has_value() &&
-            _gpsX.has_value() && _gpsY.has_value() && _gpsX_ant.has_value() &&
-            _gpsY_ant.has_value() && _barZ.has_value() &&
-            _barZ_ant.has_value() && _magX.has_value() && _magY.has_value() &&
-            _magZ.has_value());
+            _dist1.has_value() && _dist2.has_value() && _dist3.has_value() &&
+            _dist4.has_value() && _dist1_ant.has_value() && _dist2_ant.has_value() &&
+            _dist3_ant.has_value() && _dist4_ant.has_value() && _magX.has_value() &&
+            _magY.has_value() && _magZ.has_value());
   }
+
   boost::optional<double> _AccX;
   boost::optional<double> _AccY;
   boost::optional<double> _AccZ;
   boost::optional<double> _GyrX;
   boost::optional<double> _GyrY;
   boost::optional<double> _GyrZ;
-  boost::optional<double> _gpsX;
-  boost::optional<double> _gpsY;
-  boost::optional<double> _gpsX_ant;
-  boost::optional<double> _gpsY_ant;
-  boost::optional<double> _barZ;
-  boost::optional<double> _barZ_ant;
+  boost::optional<double> _dist1;
+  boost::optional<double> _dist2;
+  boost::optional<double> _dist3;
+  boost::optional<double> _dist4;
+  boost::optional<double> _dist1_ant;
+  boost::optional<double> _dist2_ant;
+  boost::optional<double> _dist3_ant;
+  boost::optional<double> _dist4_ant;
   boost::optional<double> _magX;
   boost::optional<double> _magY;
   boost::optional<double> _magZ;
@@ -43,14 +49,12 @@ public:
 class EkfROSWrapper {
 public:
   EkfROSWrapper(ros::NodeHandle &nh) {
-    acc_gyr_sub =
-        nh.subscribe("/raw_imu", 10, &EkfROSWrapper::callbackIMU, this);
-    Magnetometer_sub = nh.subscribe("/magnetic/converted", 10,
-                                    &EkfROSWrapper::callbackMag, this);
-    GPS_sub =
-        nh.subscribe("/odometry/gps", 10, &EkfROSWrapper::callbackGPS, this);
-    Barometer_sub = nh.subscribe("/pose_height", 10,
-                                 &EkfROSWrapper::callbackBarometer, this);
+    acc_gyr_sub = nh.subscribe("/raw_imu", 10, &EkfROSWrapper::callbackIMU, this);
+    Magnetometer_sub = nh.subscribe("/magnetic/converted", 10, &EkfROSWrapper::callbackMag, this);
+    beacons_dist_1 = nh.subscribe("quadrotor/odom_rssi_beacon_1", 10, &EkfROSWrapper::beacons_dist_1_Callback, this);
+    beacons_dist_2 = nh.subscribe("quadrotor/odom_rssi_beacon_2", 10, &EkfROSWrapper::beacons_dist_2_Callback, this);
+    beacons_dist_3 = nh.subscribe("quadrotor/odom_rssi_beacon_3", 10, &EkfROSWrapper::beacons_dist_3_Callback, this);
+    beacons_dist_4 = nh.subscribe("quadrotor/odom_rssi_beacon_4", 10, &EkfROSWrapper::beacons_dist_4_Callback, this);
 
     init_sub = nh.subscribe("/iniLoc", 10, &EkfROSWrapper::callbackInit, this);
     _pose_pub = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>(
@@ -72,60 +76,54 @@ public:
                          msg->header.stamp.toSec());
     }
   }
+
+  /* Frequency of update sensors (according to rostopic hz):
+    Magnetometer: 50.010 Hz
+    Beacon 1:     58.824 Hz
+    Beacon 2:     2.42 - 3.7 Hz (Irregular)
+    Beacon 3:     2.42 - 3.7 Hz (Irregular) 
+    Beacon 4:     58.824 Hz
+  
+    NOTE: The frequency of the beacons depends on the simulation: the role of 
+    the "broken" beacon passes from one beacon to another, and there are always 2 slow 
+    beacons and 2 fast beacons. 
+  */
+
+
   void callbackMag(const sensor_msgs::MagneticFieldConstPtr msg) {
     sensorValues._magX = msg->magnetic_field.x;
     sensorValues._magY = msg->magnetic_field.y;
     sensorValues._magZ = msg->magnetic_field.z;
-    // if (sensorValues.checkValidUpdateValues() && _ekf.matrixInitialized) {
-    //   _ekf.EKFUpdate(sensorValues._gpsX.value(), sensorValues._gpsY.value(),
-    //                  sensorValues._barZ.value(),
-    //                  sensorValues._gpsX_ant.value(),
-    //                  sensorValues._gpsY_ant.value(),
-    //                  sensorValues._barZ_ant.value(),
-    //                  sensorValues._AccX.value(), sensorValues._AccY.value(),
-    //                  sensorValues._AccZ.value(), sensorValues._magX.value(),
-    //                  sensorValues._magY.value(), sensorValues._magZ.value(),
-    //                  msg->header.stamp.toSec());
-    // }
+     if (sensorValues.checkValidUpdateValues() && _ekf.matrixInitialized) {
+       _ekf.EKFUpdate(sensorValues._dist1.value(), sensorValues._dist2.value(),
+                      sensorValues._dist3.value(), sensorValues._dist4.value(),
+                      sensorValues._dist1_ant.value(), sensorValues._dist2_ant.value(),
+                      sensorValues._dist3_ant.value(), sensorValues._dist4_ant.value(),
+                      sensorValues._magX.value(), sensorValues._magY.value(),
+                      sensorValues._magZ.value(), sensorValues._AccX.value(),
+                      sensorValues._AccY.value(), sensorValues._AccZ.value(),
+                      msg->header.stamp.toSec());
+     }
   }
 
-  void callbackGPS(const nav_msgs::OdometryConstPtr msg) {
-    if (sensorValues._gpsX) {
-      sensorValues._gpsX_ant = sensorValues._gpsX;
-    }
-    if (sensorValues._gpsY) {
-      sensorValues._gpsY_ant = sensorValues._gpsY;
-    }
-    sensorValues._gpsX = msg->pose.pose.position.x;
-    sensorValues._gpsY = msg->pose.pose.position.y;
-    if (sensorValues.checkValidUpdateValues() && _ekf.matrixInitialized) {
-      _ekf.EKFUpdate(sensorValues._gpsX.value(), sensorValues._gpsY.value(),
-                     sensorValues._barZ.value(), sensorValues._gpsX_ant.value(),
-                     sensorValues._gpsY_ant.value(),
-                     sensorValues._barZ_ant.value(), sensorValues._AccX.value(),
-                     sensorValues._AccY.value(), sensorValues._AccZ.value(),
-                     sensorValues._magX.value(), sensorValues._magY.value(),
-                     sensorValues._magZ.value(), msg->header.stamp.toSec());
-    }
+  void beacons_dist_1_Callback(const std_msgs::Float64 msg) {
+    sensorValues._dist1_ant = sensorValues._dist1;
+    sensorValues._dist1 = msg.data;
+  }
+  
+  void beacons_dist_2_Callback(const std_msgs::Float64 msg) {
+    sensorValues._dist2_ant = sensorValues._dist2;
+    sensorValues._dist2 = msg.data;
   }
 
-  void callbackBarometer(
-      const geometry_msgs::PoseWithCovarianceStampedConstPtr msg) {
-    if (sensorValues._barZ.has_value()) {
-      sensorValues._barZ_ant = sensorValues._barZ;
-    }
-    sensorValues._barZ = msg->pose.pose.position.z;
-    // if (sensorValues.checkValidUpdateValues() && _ekf.matrixInitialized) {
-    //   _ekf.EKFUpdate(sensorValues._gpsX.value(), sensorValues._gpsY.value(),
-    //                  sensorValues._barZ.value(),
-    //                  sensorValues._gpsX_ant.value(),
-    //                  sensorValues._gpsY_ant.value(),
-    //                  sensorValues._barZ_ant.value(),
-    //                  sensorValues._AccX.value(), sensorValues._AccY.value(),
-    //                  sensorValues._AccZ.value(), sensorValues._magX.value(),
-    //                  sensorValues._magY.value(), sensorValues._magZ.value(),
-    //                  msg->header.stamp.toSec());
-    // }
+  void beacons_dist_3_Callback(const std_msgs::Float64 msg) {
+    sensorValues._dist3_ant = sensorValues._dist3;
+    sensorValues._dist3 = msg.data;
+  }
+
+  void beacons_dist_4_Callback(const std_msgs::Float64 msg) {
+    sensorValues._dist4_ant = sensorValues._dist4;
+    sensorValues._dist4 = msg.data;
   }
 
   void callbackInit(const beta_bot_localization::IniLocalization msg) {
@@ -187,8 +185,10 @@ private:
   SensorMeasurementsMaintainer sensorValues;
   ros::Subscriber acc_gyr_sub;
   ros::Subscriber Magnetometer_sub;
-  ros::Subscriber GPS_sub;
-  ros::Subscriber Barometer_sub;
+  ros::Subscriber beacons_dist_1;
+  ros::Subscriber beacons_dist_2;
+  ros::Subscriber beacons_dist_3;
+  ros::Subscriber beacons_dist_4;
   ros::Subscriber init_sub;
   ros::Publisher _pose_pub;
   ros::Publisher _poseRPY_pub;
@@ -201,6 +201,13 @@ int main(int argc, char **argv) {
   ros::AsyncSpinner spinner(4);
   spinner.start();
   EkfROSWrapper ekf_ros_wrapper(nh);
+
+  // Set the beacons' position: #MUST BE DONE BY SUBSCRIBING TO A SPECIFIC TOPIC FOR THIS PURPOSE
+  // Beacons' position extracted directly from beta-bot/src/BetaBot/beacons_gazebo/launch/spawn_beacons.launch
+  ekf_ros_wrapper._ekf.SetBeaconPosition(0.755,9.436,12.38,1);
+  ekf_ros_wrapper._ekf.SetBeaconPosition(24.83,-14.54,6.324,2);
+  ekf_ros_wrapper._ekf.SetBeaconPosition(-24.925,-8.906,12.42,3);
+  ekf_ros_wrapper._ekf.SetBeaconPosition(62.639,-13.663,5.179,4);
 
   // Debug msg
   ros::Rate rate(50);
