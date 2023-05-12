@@ -51,12 +51,20 @@ void ExtendedKalmanFilter::EKFPrediction(double LinAccX, double LinAccY,
       0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 1;
 
+  
+  // Update velocities first??
+  //_nu(3) = _nu(3) + LinAccX * T;
+  //_nu(4) = _nu(4) + LinAccY * T;
+  //_nu(5) = _nu(5) + LinAccZ * T;
+  
   _nu(0) = _nu(0) + _nu(3) * T + 1 / 2 * LinAccX * T * T;
   _nu(1) = _nu(1) + _nu(4) * T + 1 / 2 * LinAccY * T * T;
   _nu(2) = _nu(2) + _nu(5) * T + 1 / 2 * LinAccZ * T * T;
+
   _nu(3) = _nu(3) + LinAccX * T;
   _nu(4) = _nu(4) + LinAccY * T;
   _nu(5) = _nu(5) + LinAccZ * T;
+
   _nu(6) = _nu(6) + AngVelX * T;
   _nu(7) = _nu(7) + AngVelY * T;
   _nu(8) = _nu(8) + AngVelZ * T;
@@ -88,6 +96,7 @@ void ExtendedKalmanFilter::EKFUpdate(double dist1, double dist2, double dist3,
             cos(accEstimatedPitch) * magX + sin(accEstimatedRoll) * magY +
             cos(accEstimatedRoll) * sin(accEstimatedPitch) * magZ); // WRONG
 
+  
   Eigen::Matrix<double, 11, 1> h;
   h(0) = sqrt((_nu(0)-_xb[0])*(_nu(0)-_xb[0]) + (_nu(1)-_yb[0])*(_nu(1)-_yb[0]) + (_nu(2)-_zb[0])*(_nu(2)-_zb[0]));
   h(1) = sqrt((_nu(0)-_xb[1])*(_nu(0)-_xb[1]) + (_nu(1)-_yb[1])*(_nu(1)-_yb[1]) + (_nu(2)-_zb[1])*(_nu(2)-_zb[1]));
@@ -105,11 +114,11 @@ void ExtendedKalmanFilter::EKFUpdate(double dist1, double dist2, double dist3,
 
   // At this point, prove that h is almost equal to z
   std::cout << "-----------------------------------------------------------------------" << std::endl;
-  std::cout << "h        " << "z" << std::endl;
+  std::cout << "h           " << "z           " << "abs(h-z)" << std::endl;
   
   for(int i=0; i<z.size(); i++){
     const Eigen::IOFormat fmt(6, 0, "\t", " ", "");    
-    std::cout << h(i) << "   |" << z(i) << std::endl;
+    std::cout << h(i) << "   |" << z(i) << "   |" << abs(h(i)-z(i)) << std::endl;
   } 
 
   // If we decrease variance value of beacons (increment confidence in beacons), h gets very wrong
@@ -170,6 +179,93 @@ void ExtendedKalmanFilter::EKFUpdate(double dist1, double dist2, double dist3,
   H85 = -T*H82;
   H86 = -T*H83;
 
+  // ********* END OF THE FIRST VERSION *********** //
+
+
+  // SECOND VERSION OF THE JACOBIAN (REVERTING TO THE PREVIOUS INSTANT ALSO THE VELOCITY)
+  // Eigen::Matrix<double, 11, 1> h;
+  // h(0) = sqrt((_nu(0)-_xb[0])*(_nu(0)-_xb[0]) + (_nu(1)-_yb[0])*(_nu(1)-_yb[0]) + (_nu(2)-_zb[0])*(_nu(2)-_zb[0]));
+  // h(1) = sqrt((_nu(0)-_xb[1])*(_nu(0)-_xb[1]) + (_nu(1)-_yb[1])*(_nu(1)-_yb[1]) + (_nu(2)-_zb[1])*(_nu(2)-_zb[1]));
+  // h(2) = sqrt((_nu(0)-_xb[2])*(_nu(0)-_xb[2]) + (_nu(1)-_yb[2])*(_nu(1)-_yb[2]) + (_nu(2)-_zb[2])*(_nu(2)-_zb[2]));
+  // h(3) = sqrt((_nu(0)-_xb[3])*(_nu(0)-_xb[3]) + (_nu(1)-_yb[3])*(_nu(1)-_yb[3]) + (_nu(2)-_zb[3])*(_nu(2)-_zb[3]));
+
+  // h(4) = sqrt(((_nu(0)-T*(_nu(3)-LinAccX*T)-(1/2)*LinAccX*T*T)-_xb[0])*((_nu(0)-T*(_nu(3)-LinAccX*T)-(1/2)*LinAccX*T*T)-_xb[0]) + ((_nu(1)-T*(_nu(4)-LinAccY*T)-(1/2)*LinAccY*T*T)-_yb[0])*((_nu(1)-T*(_nu(4)-LinAccY*T)-(1/2)*LinAccY*T*T)-_yb[0]) + ((_nu(2)-T*(_nu(5)-LinAccZ*T)-(1/2)*LinAccZ*T*T)-_zb[0])*((_nu(2)-T*(_nu(5)-LinAccZ*T)-(1/2)*LinAccZ*T*T)-_zb[0]));
+  // h(5) = sqrt(((_nu(0)-T*(_nu(3)-LinAccX*T)-(1/2)*LinAccX*T*T)-_xb[1])*((_nu(0)-T*(_nu(3)-LinAccX*T)-(1/2)*LinAccX*T*T)-_xb[1]) + ((_nu(1)-T*(_nu(4)-LinAccY*T)-(1/2)*LinAccY*T*T)-_yb[1])*((_nu(1)-T*(_nu(4)-LinAccY*T)-(1/2)*LinAccY*T*T)-_yb[1]) + ((_nu(2)-T*(_nu(5)-LinAccZ*T)-(1/2)*LinAccZ*T*T)-_zb[1])*((_nu(2)-T*(_nu(5)-LinAccZ*T)-(1/2)*LinAccZ*T*T)-_zb[1]));
+  // h(6) = sqrt(((_nu(0)-T*(_nu(3)-LinAccX*T)-(1/2)*LinAccX*T*T)-_xb[2])*((_nu(0)-T*(_nu(3)-LinAccX*T)-(1/2)*LinAccX*T*T)-_xb[2]) + ((_nu(1)-T*(_nu(4)-LinAccY*T)-(1/2)*LinAccY*T*T)-_yb[2])*((_nu(1)-T*(_nu(4)-LinAccY*T)-(1/2)*LinAccY*T*T)-_yb[2]) + ((_nu(2)-T*(_nu(5)-LinAccZ*T)-(1/2)*LinAccZ*T*T)-_zb[2])*((_nu(2)-T*(_nu(5)-LinAccZ*T)-(1/2)*LinAccZ*T*T)-_zb[2]));
+  // h(7) = sqrt(((_nu(0)-T*(_nu(3)-LinAccX*T)-(1/2)*LinAccX*T*T)-_xb[3])*((_nu(0)-T*(_nu(3)-LinAccX*T)-(1/2)*LinAccX*T*T)-_xb[3]) + ((_nu(1)-T*(_nu(4)-LinAccY*T)-(1/2)*LinAccY*T*T)-_yb[3])*((_nu(1)-T*(_nu(4)-LinAccY*T)-(1/2)*LinAccY*T*T)-_yb[3]) + ((_nu(2)-T*(_nu(5)-LinAccZ*T)-(1/2)*LinAccZ*T*T)-_zb[3])*((_nu(2)-T*(_nu(5)-LinAccZ*T)-(1/2)*LinAccZ*T*T)-_zb[3]));
+
+  // h(8) = _nu(6);
+  // h(9) = _nu(7);
+  // h(10) = _nu(8);
+
+  // // At this point, prove that h is almost equal to z
+  // std::cout << "-----------------------------------------------------------------------" << std::endl;
+  // std::cout << "h           " << "z           " << "abs(h-z)" << std::endl;
+  
+  // for(int i=0; i<z.size(); i++){
+  //   const Eigen::IOFormat fmt(6, 0, "\t", " ", "");    
+  //   std::cout << h(i) << "   |" << z(i) << "   |" << abs(h(i)-z(i)) << std::endl;
+  // } 
+
+  // // If we decrease variance value of beacons (increment confidence in beacons), h gets very wrong
+  // // So, if we rely on prediction, the formulas of h are correct. So, the mistake has to be in the 
+  // // H computation below:
+
+  // double H11, H12, H13;
+  // double H21, H22, H23;
+  // double H31, H32, H33;
+  // double H41, H42, H43;
+
+  // double H51, H52, H53, H54, H55, H56;
+  // double H61, H62, H63, H64, H65, H66;
+  // double H71, H72, H73, H74, H75, H76;
+  // double H81, H82, H83, H84, H85, H86;
+
+  // H11 = (_nu(0)-_xb[0])/h(0);  // h(i) = distance between robot and beacon i+1 at the current instant (i = 0,1,2,3)
+  // H12 = (_nu(1)-_yb[0])/h(0);
+  // H13 = (_nu(2)-_zb[0])/h(0);
+
+  // H21 = (_nu(0)-_xb[1])/h(1);  // h(i) = distance between robot and beacon i+1 at the current instant (i = 0,1,2,3)
+  // H21 = (_nu(1)-_yb[1])/h(1);
+  // H21 = (_nu(2)-_zb[1])/h(1);
+  
+  // H31 = (_nu(0)-_xb[2])/h(2);  // h(i) = distance between robot and beacon i+1 at the current instant (i = 0,1,2,3)
+  // H32 = (_nu(1)-_yb[2])/h(2);
+  // H33 = (_nu(2)-_zb[2])/h(2);
+
+  // H41 = (_nu(0)-_xb[3])/h(3);  // h(i) = distance between robot and beacon i+1 at the current instant (i = 0,1,2,3)
+  // H42 = (_nu(1)-_yb[3])/h(3);
+  // H43 = (_nu(2)-_zb[3])/h(3);
+
+  // H51 = ((_nu(0)-T*(_nu(3)-LinAccX*T)-(1/2)*LinAccX*T*T)-_xb[0])/h(4);  // h(i) = distance between robot and beacon i+1 at the previous instant (i = 4,5,6,7)
+  // H52 = ((_nu(1)-T*(_nu(4)-LinAccY*T)-(1/2)*LinAccY*T*T)-_yb[0])/h(4);
+  // H53 = ((_nu(2)-T*(_nu(5)-LinAccZ*T)-(1/2)*LinAccZ*T*T)-_zb[0])/h(4);
+  // H54 = -T*H51;
+  // H55 = -T*H52;
+  // H56 = -T*H53;
+
+  // H61 = ((_nu(0)-T*(_nu(3)-LinAccX*T)-(1/2)*LinAccX*T*T)-_xb[1])/h(5);  // h(i) = distance between robot and beacon i+1 at the previous instant (i = 4,5,6,7)
+  // H62 = ((_nu(1)-T*(_nu(4)-LinAccY*T)-(1/2)*LinAccY*T*T)-_yb[1])/h(5);
+  // H63 = ((_nu(2)-T*(_nu(5)-LinAccZ*T)-(1/2)*LinAccZ*T*T)-_zb[1])/h(5);
+  // H64 = -T*H61;
+  // H65 = -T*H62;
+  // H66 = -T*H63;
+
+  // H71 = ((_nu(0)-T*(_nu(3)-LinAccX*T)-(1/2)*LinAccX*T*T)-_xb[2])/h(6);  // h(i) = distance between robot and beacon i+1 at the previous instant (i = 4,5,6,7)
+  // H72 = ((_nu(1)-T*(_nu(4)-LinAccY*T)-(1/2)*LinAccY*T*T)-_yb[2])/h(6);
+  // H73 = ((_nu(2)-T*(_nu(5)-LinAccZ*T)-(1/2)*LinAccZ*T*T)-_zb[2])/h(6);
+  // H74 = -T*H71;
+  // H75 = -T*H72;
+  // H76 = -T*H73;
+
+  // H81 = ((_nu(0)-T*(_nu(3)-LinAccX*T)-(1/2)*LinAccX*T*T)-_xb[3])/h(7);  // h(i) = distance between robot and beacon i+1 at the previous instant (i = 4,5,6,7)
+  // H82 = ((_nu(1)-T*(_nu(4)-LinAccY*T)-(1/2)*LinAccY*T*T)-_yb[3])/h(7);
+  // H83 = ((_nu(2)-T*(_nu(5)-LinAccZ*T)-(1/2)*LinAccZ*T*T)-_zb[3])/h(7);
+  // H84 = -T*H81;
+  // H85 = -T*H82;
+  // H86 = -T*H83;
+
+  // ********* END OF THE SECOND VERSION *********** //
 
   _H << H11, H12, H13, 0, 0, 0, 0, 0, 0,
         H21, H22, H23, 0, 0, 0, 0, 0, 0,

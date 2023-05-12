@@ -18,7 +18,7 @@ constexpr double desv_tip_sigma_inicial{1};
 constexpr double desv_tip_R_position{1};
 constexpr double desv_tip_R_vel{1};
 constexpr double desv_tip_R_orientation{1};
-constexpr double desv_tip_Q_beacons{0.6};   // Based on "/beacons_gazebo/src/rssi_noise.cpp", line 36
+constexpr double desv_tip_Q_beacons{0.06};   // Based on "/beacons_gazebo/src/rssi_noise.cpp", line 36
 constexpr double desv_tip_Q_or_rp{0.005};   // aprox
 constexpr double desv_tip_Q_or_yaw{1.3e-2}; // aprox
 constexpr double desv_tip_Q_IMU{0.005};
@@ -73,7 +73,15 @@ private:
   double _lastUpdTimeStamp{0};
 
   // Beacons' position
-  double _xb[4], _yb[4], _zb[4];
+  double _xb[4] = {0.755, 24.83, -24.925, 62.639};
+  double _yb[4] = {9.436, -14.54, -8.906, -13.663};
+  double _zb[4] = {0.0, 6.324, 12.42, 5.179};
+
+
+  //ekf_ros_wrapper._ekf.SetBeaconPosition(0.755,9.436,12.38,1);
+  //ekf_ros_wrapper._ekf.SetBeaconPosition(24.83,-14.54,6.324,2);
+  //ekf_ros_wrapper._ekf.SetBeaconPosition(-24.925,-8.906,12.42,3);
+  //ekf_ros_wrapper._ekf.SetBeaconPosition(62.639,-13.663,5.179,4);
 };
 
 #endif

@@ -204,10 +204,10 @@ int main(int argc, char **argv) {
 
   // Set the beacons' position: #MUST BE DONE BY SUBSCRIBING TO A SPECIFIC TOPIC FOR THIS PURPOSE
   // Beacons' position extracted directly from beta-bot/src/BetaBot/beacons_gazebo/launch/spawn_beacons.launch
-  ekf_ros_wrapper._ekf.SetBeaconPosition(0.755,9.436,12.38,1);
-  ekf_ros_wrapper._ekf.SetBeaconPosition(24.83,-14.54,6.324,2);
-  ekf_ros_wrapper._ekf.SetBeaconPosition(-24.925,-8.906,12.42,3);
-  ekf_ros_wrapper._ekf.SetBeaconPosition(62.639,-13.663,5.179,4);
+  //ekf_ros_wrapper._ekf.SetBeaconPosition(0.755,9.436,12.38,1);
+  //ekf_ros_wrapper._ekf.SetBeaconPosition(24.83,-14.54,6.324,2);
+  //ekf_ros_wrapper._ekf.SetBeaconPosition(-24.925,-8.906,12.42,3);
+  //ekf_ros_wrapper._ekf.SetBeaconPosition(62.639,-13.663,5.179,4);
 
   // Debug msg
   ros::Rate rate(50);

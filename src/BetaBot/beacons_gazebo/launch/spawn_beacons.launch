@@ -3,7 +3,7 @@
     <arg name="model_file" default="'$(find beacons_gazebo)/models/beacon/model.sdf'" />
     <arg name="height" default="15" />
 
-    <node name="model_spawn__beacon_1" pkg="gazebo_ros" type="spawn_model" output="screen" args="-x 0.755 -y 9.436 -z 12.38 -R 0 -P 0 -Y 0 -sdf -model beacon_1 -file $(arg model_file)" />
+    <node name="model_spawn__beacon_1" pkg="gazebo_ros" type="spawn_model" output="screen" args="-x 0.755 -y 9.436 -z 0.0 -R 0 -P 0 -Y 0 -sdf -model beacon_1 -file $(arg model_file)" />
     <node name="model_spawn__beacon_2" pkg="gazebo_ros" type="spawn_model" output="screen" args="-x 24.83 -y -14.54 -z 6.324 -R 0 -P 0 -Y -2.942 -sdf -model beacon_2 -file $(arg model_file)" />
     <node name="model_spawn__beacon_3" pkg="gazebo_ros" type="spawn_model" output="screen" args="-x -34.8 -y -7.2 -z 14.7 -R 0 -P 0 -Y 2.484 -sdf -model beacon_3 -file $(arg model_file)" />
     <node name="model_spawn__beacon_4" pkg="gazebo_ros" type="spawn_model" output="screen" args="-x 62.05 -y -26.5 -z 5.18 -R 0 -P 0 -Y -2.7   -sdf -model beacon_4 -file $(arg model_file)" />
