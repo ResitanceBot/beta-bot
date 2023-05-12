@@ -1,5 +1,6 @@
 #include "ekf.hpp"
 #include "ros/ros.h"
+#include <iostream>
 
 void ExtendedKalmanFilter::initMatrix(pose InitialPose) {
 
@@ -60,6 +61,8 @@ void ExtendedKalmanFilter::EKFPrediction(double LinAccX, double LinAccY,
   _nu(7) = _nu(7) + AngVelY * T;
   _nu(8) = _nu(8) + AngVelZ * T;
 
+  //std::cout << "POSICIÓN EN PREDICCIÓN [x   y   z] = " << _nu(0) << "   " << _nu(1) << "   " << _nu(2) << std::endl;
+
   _sigma = _G * _sigma * _G.transpose() + _R;
 
   _lastPredTimeStamp = currentTimeStamp;
@@ -100,6 +103,18 @@ void ExtendedKalmanFilter::EKFUpdate(double dist1, double dist2, double dist3,
   h(9) = _nu(7);
   h(10) = _nu(8);
 
+  // At this point, prove that h is almost equal to z
+  std::cout << "-----------------------------------------------------------------------" << std::endl;
+  std::cout << "h        " << "z" << std::endl;
+  
+  for(int i=0; i<z.size(); i++){
+    const Eigen::IOFormat fmt(6, 0, "\t", " ", "");    
+    std::cout << h(i) << "   |" << z(i) << std::endl;
+  } 
+
+  // If we decrease variance value of beacons (increment confidence in beacons), h gets very wrong
+  // So, if we rely on prediction, the formulas of h are correct. So, the mistake has to be in the 
+  // H computation below:
 
   double H11, H12, H13;
   double H21, H22, H23;
@@ -111,22 +126,21 @@ void ExtendedKalmanFilter::EKFUpdate(double dist1, double dist2, double dist3,
   double H71, H72, H73, H74, H75, H76;
   double H81, H82, H83, H84, H85, H86;
 
-
   H11 = (_nu(0)-_xb[0])/h(0);  // h(i) = distance between robot and beacon i+1 at the current instant (i = 0,1,2,3)
-  H12 = (_nu(1)-_xb[0])/h(0);
-  H13 = (_nu(2)-_xb[0])/h(0);
+  H12 = (_nu(1)-_yb[0])/h(0);
+  H13 = (_nu(2)-_zb[0])/h(0);
 
   H21 = (_nu(0)-_xb[1])/h(1);  // h(i) = distance between robot and beacon i+1 at the current instant (i = 0,1,2,3)
-  H21 = (_nu(1)-_xb[1])/h(1);
-  H21 = (_nu(2)-_xb[1])/h(1);
+  H21 = (_nu(1)-_yb[1])/h(1);
+  H21 = (_nu(2)-_zb[1])/h(1);
   
   H31 = (_nu(0)-_xb[2])/h(2);  // h(i) = distance between robot and beacon i+1 at the current instant (i = 0,1,2,3)
-  H32 = (_nu(1)-_xb[2])/h(2);
-  H33 = (_nu(2)-_xb[2])/h(2);
+  H32 = (_nu(1)-_yb[2])/h(2);
+  H33 = (_nu(2)-_zb[2])/h(2);
 
   H41 = (_nu(0)-_xb[3])/h(3);  // h(i) = distance between robot and beacon i+1 at the current instant (i = 0,1,2,3)
-  H42 = (_nu(1)-_xb[3])/h(3);
-  H43 = (_nu(2)-_xb[3])/h(3);
+  H42 = (_nu(1)-_yb[3])/h(3);
+  H43 = (_nu(2)-_zb[3])/h(3);
 
   H51 = ((_nu(0)-T*_nu(3)-(1/2)*LinAccX*T*T)-_xb[0])/h(4);  // h(i) = distance between robot and beacon i+1 at the previous instant (i = 4,5,6,7)
   H52 = ((_nu(1)-T*_nu(4)-(1/2)*LinAccY*T*T)-_yb[0])/h(4);
@@ -173,6 +187,8 @@ void ExtendedKalmanFilter::EKFUpdate(double dist1, double dist2, double dist3,
   K = _sigma * _H.transpose() * (_H * _sigma * _H.transpose() + _Q).inverse();
   _nu = _nu + K * (z - h);
   _sigma = (Eigen::Matrix<double, 9, 9>::Identity() - K * _H) * _sigma;
+
+  //std::cout << "POSICIÓN EN ACTUALIZACIÓN [x   y   z] = " << _nu(0) << "   " << _nu(1) << "   " << _nu(2) << std::endl;
 
   _lastUpdTimeStamp = currentTimeStamp;
 }
