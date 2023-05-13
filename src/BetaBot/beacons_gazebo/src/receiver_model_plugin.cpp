@@ -174,13 +174,20 @@ namespace gazebo {
                         );
 
                         //std::cout << "Procesando este beacon:" << model->GetName() << std::endl;
+                        
+                        // Seed the random number generator with the current time
+                        std::mt19937 rng(std::chrono::steady_clock::now().time_since_epoch().count());
+                        std::bernoulli_distribution dist(0.65); // Bernoulli distribution with p = 0.65
+
+                        // Generate a random boolean value: this number models possible message transmission losses
+                        bool b = dist(rng);
 
                         beacons_gazebo::ReceiverIn msg;
                         msg.time_stamp = ros::Time::now();
                         msg.rssi = this->rssi_noise_generators[beacon_name].getRSSI(d, simTime.Double());
                         msg.id = beacon_name;
                         msg.m_rssi = this->m_rssi;
-                        this->receiver_in_msgs_publisher.publish(msg);
+                        if(b==true && d<100.0) this->receiver_in_msgs_publisher.publish(msg);
 
                         //if (!this->packed_publishing)
                         //    this->receiver_in_msgs_publisher.publish(msg);

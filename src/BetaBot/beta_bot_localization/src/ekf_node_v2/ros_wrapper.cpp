@@ -77,19 +77,6 @@ public:
     }
   }
 
-  /* Frequency of update sensors (according to rostopic hz):
-    Magnetometer: 50.010 Hz
-    Beacon 1:     58.824 Hz
-    Beacon 2:     2.42 - 3.7 Hz (Irregular)
-    Beacon 3:     2.42 - 3.7 Hz (Irregular) 
-    Beacon 4:     58.824 Hz
-  
-    NOTE: The frequency of the beacons depends on the simulation: the role of 
-    the "broken" beacon passes from one beacon to another, and there are always 2 slow 
-    beacons and 2 fast beacons. 
-  */
-
-
   void callbackMag(const sensor_msgs::MagneticFieldConstPtr msg) {
     sensorValues._magX = msg->magnetic_field.x;
     sensorValues._magY = msg->magnetic_field.y;
@@ -108,22 +95,30 @@ public:
 
   void beacons_dist_1_Callback(const std_msgs::Float64 msg) {
     sensorValues._dist1_ant = sensorValues._dist1;
-    sensorValues._dist1 = msg.data;
+    if((ros::Time::now() - lastStampBeacon1).toSec() < 1/20.0)sensorValues._dist1 = msg.data;
+    else sensorValues._dist1 = -1.0;
+    lastStampBeacon1 = ros::Time::now();  
   }
   
   void beacons_dist_2_Callback(const std_msgs::Float64 msg) {
     sensorValues._dist2_ant = sensorValues._dist2;
-    sensorValues._dist2 = msg.data;
+    if((ros::Time::now() - lastStampBeacon2).toSec() < 1/20.0)sensorValues._dist2 = msg.data;
+    else sensorValues._dist2 = -1.0;
+    lastStampBeacon2 = ros::Time::now();  
   }
 
   void beacons_dist_3_Callback(const std_msgs::Float64 msg) {
     sensorValues._dist3_ant = sensorValues._dist3;
-    sensorValues._dist3 = msg.data;
+    if((ros::Time::now() - lastStampBeacon3).toSec() < 1/20.0)sensorValues._dist3 = msg.data;
+    else sensorValues._dist3 = -1.0;  
+    lastStampBeacon3 = ros::Time::now();
   }
 
   void beacons_dist_4_Callback(const std_msgs::Float64 msg) {
     sensorValues._dist4_ant = sensorValues._dist4;
-    sensorValues._dist4 = msg.data;
+    if((ros::Time::now() - lastStampBeacon4).toSec() < 1/20.0)sensorValues._dist4 = msg.data;
+    else sensorValues._dist4 = -1.0;
+    lastStampBeacon4 = ros::Time::now();  
   }
 
   void callbackInit(const beta_bot_localization::IniLocalization msg) {
@@ -193,6 +188,12 @@ private:
   ros::Publisher _pose_pub;
   ros::Publisher _poseRPY_pub;
   tf::TransformBroadcaster _transform_broadcaster;
+
+  // Time variables for evaluating data losses from beacons
+  ros::Time lastStampBeacon1;
+  ros::Time lastStampBeacon2;
+  ros::Time lastStampBeacon3;
+  ros::Time lastStampBeacon4;
 };
 
 int main(int argc, char **argv) {
