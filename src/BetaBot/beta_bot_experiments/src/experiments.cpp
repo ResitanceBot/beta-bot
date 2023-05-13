@@ -1,21 +1,24 @@
 /* LIBRERÍAS */
-#include <ros/ros.h>
-#include <math.h>
-#include "beta_bot_experiments/PoseRPYWithCovariance.h"
-#include <iostream>
+#include "beta_bot_localization/PoseRPYWithCovariance.h"
 #include <fstream>
+#include <iostream>
+#include <math.h>
+#include <ros/ros.h>
 #include <string>
 
 /* VARIABLES GLOBALES */
-float x_GT, y_GT, z_GT, roll_GT, pitch_GT, yaw_GT;       /* Coordenadas del robot reales (Ground Truth) */
-float x_LOC, y_LOC, z_LOC, roll_LOC, pitch_LOC, yaw_LOC; /* Coordenadas del robot calculadas por el EKF */
+float x_GT, y_GT, z_GT, roll_GT, pitch_GT,
+    yaw_GT; /* Coordenadas del robot reales (Ground Truth) */
+float x_LOC, y_LOC, z_LOC, roll_LOC, pitch_LOC,
+    yaw_LOC; /* Coordenadas del robot calculadas por el EKF */
 
 // Apertura de fichero
-// std::ofstream ficheroDatosExp("//home/aglora/beta-bot/src/BetaBot/beta_bot_experiments/tests/"+nombreFile+".txt",std::ios::app); //fichero datos experimento en formato CSV
+// std::ofstream
+// ficheroDatosExp("//home/aglora/beta-bot/src/BetaBot/beta_bot_experiments/tests/"+nombreFile+".txt",std::ios::app);
+// //fichero datos experimento en formato CSV
 
 /* CALLBACKS */
-void GTCallback(const beta_bot_experiments::PoseRPYWithCovariance &msg)
-{
+void GTCallback(const beta_bot_localization::PoseRPYWithCovariance &msg) {
   x_GT = msg.x;
   y_GT = msg.y;
   z_GT = msg.z;
@@ -24,8 +27,7 @@ void GTCallback(const beta_bot_experiments::PoseRPYWithCovariance &msg)
   yaw_GT = msg.yaw;
 }
 
-void LOCCallback(const beta_bot_experiments::PoseRPYWithCovariance &msg)
-{
+void LOCCallback(const beta_bot_localization::PoseRPYWithCovariance &msg) {
   x_LOC = msg.x;
   y_LOC = msg.y;
   z_LOC = msg.z;
@@ -36,13 +38,13 @@ void LOCCallback(const beta_bot_experiments::PoseRPYWithCovariance &msg)
 
 /* MAIN */
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   ros::init(argc, argv, "experiments");
 
   ros::NodeHandle n;
   ros::Subscriber gt_sub = n.subscribe("/ground_truth/poseRPY", 10, GTCallback);
-  ros::Subscriber loc_sub = n.subscribe("/estimated_localization/poseRPY", 10, LOCCallback);
+  ros::Subscriber loc_sub =
+      n.subscribe("/estimated_localization/poseRPY", 10, LOCCallback);
 
   ros::Time current_time, last_time;
   current_time = ros::Time::now();
@@ -60,15 +62,21 @@ int main(int argc, char **argv)
   std::string homepath = std::getenv("HOME");
   std::cout << homepath << std::endl;
 
-  std::ofstream ficheroDatosExp(homepath + "/beta-bot/src/BetaBot/beta_bot_experiments/tests/"+ nombreFile + ".txt", std::ios::app); // fichero datos experimento en formato CSV
+  std::ofstream ficheroDatosExp(
+      homepath + "/beta-bot/src/BetaBot/beta_bot_experiments/tests/" +
+          nombreFile + ".txt",
+      std::ios::app); // fichero datos experimento en formato CSV
 
-  while (n.ok())
-  {
+  while (n.ok()) {
 
     ros::spinOnce();
     current_time = ros::Time::now();
 
-    ficheroDatosExp << ros::Time::now() << "," << x_GT << "," << y_GT << "," << z_GT << "," << roll_GT << "," << pitch_GT << "," << yaw_GT << "," << x_LOC << "," << y_LOC << "," << z_LOC << "," << roll_LOC << "," << pitch_LOC << "," << yaw_LOC << std::endl;
+    ficheroDatosExp << ros::Time::now() << "," << x_GT << "," << y_GT << ","
+                    << z_GT << "," << roll_GT << "," << pitch_GT << ","
+                    << yaw_GT << "," << x_LOC << "," << y_LOC << "," << z_LOC
+                    << "," << roll_LOC << "," << pitch_LOC << "," << yaw_LOC
+                    << std::endl;
 
     last_time = current_time;
     r.sleep();
