@@ -2527,19 +2527,6 @@
     </include>
 
     <include>
-      <name>oak_tree_85</name>
-      <pose>
-      -6.418
-      10.37
-      0.0
-      0
-      0
-      0.55
-      </pose>
-      <uri>model://oak_tree</uri>
-    </include>
-
-    <include>
       <name>apartment_86</name>
       <pose>
       1.573
