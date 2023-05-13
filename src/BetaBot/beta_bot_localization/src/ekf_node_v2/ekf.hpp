@@ -73,15 +73,9 @@ private:
   double _lastUpdTimeStamp{0};
 
   // Beacons' position
-  double _xb[4] = {0.755, 24.83, -24.925, 62.639};
-  double _yb[4] = {9.436, -14.54, -8.906, -13.663};
-  double _zb[4] = {0.0, 6.324, 12.42, 5.179};
-
-
-  //ekf_ros_wrapper._ekf.SetBeaconPosition(0.755,9.436,12.38,1);
-  //ekf_ros_wrapper._ekf.SetBeaconPosition(24.83,-14.54,6.324,2);
-  //ekf_ros_wrapper._ekf.SetBeaconPosition(-24.925,-8.906,12.42,3);
-  //ekf_ros_wrapper._ekf.SetBeaconPosition(62.639,-13.663,5.179,4);
+  double _xb[4]; 
+  double _yb[4]; 
+  double _zb[4]; 
 };
 
 #endif

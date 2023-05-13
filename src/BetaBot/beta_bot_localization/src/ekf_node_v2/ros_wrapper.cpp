@@ -55,6 +55,7 @@ public:
     beacons_dist_2 = nh.subscribe("quadrotor/odom_rssi_beacon_2", 10, &EkfROSWrapper::beacons_dist_2_Callback, this);
     beacons_dist_3 = nh.subscribe("quadrotor/odom_rssi_beacon_3", 10, &EkfROSWrapper::beacons_dist_3_Callback, this);
     beacons_dist_4 = nh.subscribe("quadrotor/odom_rssi_beacon_4", 10, &EkfROSWrapper::beacons_dist_4_Callback, this);
+    beacons_pos = nh.subscribe("beacons_gazebo/beacons", 10, &EkfROSWrapper::beacons_pos_Callback, this);
 
     init_sub = nh.subscribe("/iniLoc", 10, &EkfROSWrapper::callbackInit, this);
     _pose_pub = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>(
@@ -69,7 +70,7 @@ public:
     sensorValues._GyrX = msg->angular_velocity.x;
     sensorValues._GyrY = msg->angular_velocity.y;
     sensorValues._GyrZ = msg->angular_velocity.z;
-    if (sensorValues.checkValidPredictValues() && _ekf.matrixInitialized) {
+    if (sensorValues.checkValidPredictValues() && _ekf.matrixInitialized && beaconsPositionInitialized) {
       _ekf.EKFPrediction(sensorValues._AccX.value(), sensorValues._AccY.value(),
                          sensorValues._AccZ.value(), sensorValues._GyrX.value(),
                          sensorValues._GyrY.value(), sensorValues._GyrZ.value(),
@@ -81,7 +82,7 @@ public:
     sensorValues._magX = msg->magnetic_field.x;
     sensorValues._magY = msg->magnetic_field.y;
     sensorValues._magZ = msg->magnetic_field.z;
-     if (sensorValues.checkValidUpdateValues() && _ekf.matrixInitialized) {
+     if (sensorValues.checkValidUpdateValues() && _ekf.matrixInitialized && beaconsPositionInitialized) {
        _ekf.EKFUpdate(sensorValues._dist1.value(), sensorValues._dist2.value(),
                       sensorValues._dist3.value(), sensorValues._dist4.value(),
                       sensorValues._dist1_ant.value(), sensorValues._dist2_ant.value(),
@@ -120,6 +121,33 @@ public:
     else sensorValues._dist4 = -1.0;
     lastStampBeacon4 = ros::Time::now();  
   }
+
+  void beacons_pos_Callback(const beacons_gazebo::BeaconSimPose &msg) {
+  int beacon_id = std::stoi(msg.id.substr(msg.id.size() - 1));
+  switch (beacon_id) {
+  case 1:
+    this->contb[beacon_id - 1] = true;
+    _ekf.SetBeaconPosition(msg.position.x,msg.position.y,msg.position.z,1);
+    break;
+  case 2:
+    this->contb[beacon_id - 1] = true;
+    _ekf.SetBeaconPosition(msg.position.x,msg.position.y,msg.position.z,2);
+    break;
+  case 3:
+    this->contb[beacon_id - 1] = true;
+    _ekf.SetBeaconPosition(msg.position.x,msg.position.y,msg.position.z,3);
+    break;
+  case 4:
+    this->contb[beacon_id - 1] = true;
+    _ekf.SetBeaconPosition(msg.position.x,msg.position.y,msg.position.z,4);
+    break;
+  }
+  if ((contb[0] == true) && (contb[1] == true) && (contb[2] == true) &&
+      (contb[3] == true)) {
+    beaconsPositionInitialized = true;
+    beacons_pos.shutdown();
+  }
+}
 
   void callbackInit(const beta_bot_localization::IniLocalization msg) {
     pose InitialPose;
@@ -184,6 +212,7 @@ private:
   ros::Subscriber beacons_dist_2;
   ros::Subscriber beacons_dist_3;
   ros::Subscriber beacons_dist_4;
+  ros::Subscriber beacons_pos;
   ros::Subscriber init_sub;
   ros::Publisher _pose_pub;
   ros::Publisher _poseRPY_pub;
@@ -194,6 +223,10 @@ private:
   ros::Time lastStampBeacon2;
   ros::Time lastStampBeacon3;
   ros::Time lastStampBeacon4;
+
+  // Variables for evaluating if beacons' position has been set
+  bool contb[4] = {false, false, false, false};
+  bool beaconsPositionInitialized = false;
 };
 
 int main(int argc, char **argv) {
