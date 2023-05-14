@@ -16,8 +16,12 @@
 class SensorMeasurementsMaintainer {
 public:
   inline bool checkValidPredictValues() {
-    return (_AccX.has_value() && _AccY.has_value() && _AccZ.has_value() &&
-            _GyrX.has_value() && _GyrY.has_value() && _GyrZ.has_value());
+    return (_VO_x.has_value() && _VO_y.has_value() && _VO_z.has_value() &&
+            _VO_vx.has_value() && _VO_vy.has_value() && _VO_vz.has_value() &&
+            _VO_r.has_value() && _VO_p.has_value() && _VO_yaw.has_value() &&
+            _VO_var_x.has_value() && _VO_var_y.has_value() && _VO_var_z.has_value() &&
+            _VO_var_vx.has_value() && _VO_var_vy.has_value() && _VO_var_vz.has_value() &&
+            _VO_var_r.has_value() && _VO_var_p.has_value() && _VO_var_yaw.has_value());
   }
   inline bool checkValidUpdateValues() {
     return (_AccX.has_value() && _AccY.has_value() && _AccZ.has_value() &&
@@ -26,13 +30,28 @@ public:
             _dist3_ant.has_value() && _dist4_ant.has_value() && _magX.has_value() &&
             _magY.has_value() && _magZ.has_value());
   }
-
+ 
+  boost::optional<double> _VO_x;
+  boost::optional<double> _VO_y;
+  boost::optional<double> _VO_z;
+  boost::optional<double> _VO_vx;
+  boost::optional<double> _VO_vy;
+  boost::optional<double> _VO_vz;
+  boost::optional<double> _VO_r;
+  boost::optional<double> _VO_p;
+  boost::optional<double> _VO_yaw;
+  boost::optional<double> _VO_var_x;
+  boost::optional<double> _VO_var_y;
+  boost::optional<double> _VO_var_z;
+  boost::optional<double> _VO_var_r;
+  boost::optional<double> _VO_var_p;
+  boost::optional<double> _VO_var_yaw;
+  boost::optional<double> _VO_var_vx;
+  boost::optional<double> _VO_var_vy;
+  boost::optional<double> _VO_var_vz;
   boost::optional<double> _AccX;
   boost::optional<double> _AccY;
   boost::optional<double> _AccZ;
-  boost::optional<double> _GyrX;
-  boost::optional<double> _GyrY;
-  boost::optional<double> _GyrZ;
   boost::optional<double> _dist1;
   boost::optional<double> _dist2;
   boost::optional<double> _dist3;
@@ -49,6 +68,7 @@ public:
 class EkfROSWrapper {
 public:
   EkfROSWrapper(ros::NodeHandle &nh) {
+    VO_sub = nh.subscribe("/stereo_odometry", 10, &EkfROSWrapper::callbackVO, this);
     acc_gyr_sub = nh.subscribe("/raw_imu", 10, &EkfROSWrapper::callbackIMU, this);
     Magnetometer_sub = nh.subscribe("/magnetic/converted", 10, &EkfROSWrapper::callbackMag, this);
     beacons_dist_1 = nh.subscribe("quadrotor/odom_rssi_beacon_1", 10, &EkfROSWrapper::beacons_dist_1_Callback, this);
@@ -63,19 +83,55 @@ public:
     _poseRPY_pub = nh.advertise<beta_bot_localization::PoseRPYWithCovariance>(
         "/estimated_localization/poseRPY", 10);
   }
+
+  void callbackVO(const nav_msgs::OdometryConstPtr msg) {
+    sensorValues._VO_x = msg->pose.pose.position.x;
+    sensorValues._VO_y = msg->pose.pose.position.y;
+    sensorValues._VO_z = msg->pose.pose.position.z;
+
+    sensorValues._VO_var_x = msg->twist.twist.linear.x;
+    sensorValues._VO_var_y = msg->twist.twist.linear.y;
+    sensorValues._VO_var_z = msg->twist.twist.linear.z;
+
+    tf::Quaternion q(
+    msg->pose.pose.orientation.x,
+    msg->pose.pose.orientation.y,
+    msg->pose.pose.orientation.z,
+    msg->pose.pose.orientation.w);
+    tf::Matrix3x3 m(q);
+    double roll, pitch, yaw;
+    m.getRPY(roll, pitch, yaw);
+
+    sensorValues._VO_r   = roll;
+    sensorValues._VO_p   = pitch;
+    sensorValues._VO_yaw = yaw;
+
+    sensorValues._VO_var_x   = msg->pose.covariance[0];
+    sensorValues._VO_var_y   = msg->pose.covariance[7];
+    sensorValues._VO_var_z   = msg->pose.covariance[14];
+    sensorValues._VO_var_r   = msg->pose.covariance[21];
+    sensorValues._VO_var_p   = msg->pose.covariance[28];
+    sensorValues._VO_var_yaw = msg->pose.covariance[35];
+
+    sensorValues._VO_var_vx   = msg->twist.covariance[0];
+    sensorValues._VO_var_vy   = msg->twist.covariance[7];
+    sensorValues._VO_var_vz   = msg->twist.covariance[14];
+
+    if (sensorValues.checkValidPredictValues() && _ekf.matrixInitialized && beaconsPositionInitialized) {
+      _ekf.EKFPrediction(sensorValues._VO_x.value(), sensorValues._VO_y.value(), sensorValues._VO_z.value(),
+                         sensorValues._VO_vx.value(), sensorValues._VO_vy.value(), sensorValues._VO_vz.value(),
+                         sensorValues._VO_r.value(), sensorValues._VO_p.value(), sensorValues._VO_yaw.value(),
+                         sensorValues._VO_var_x.value(), sensorValues._VO_var_y.value(), sensorValues._VO_var_z.value(),
+                         sensorValues._VO_var_r.value(), sensorValues._VO_var_p.value(), sensorValues._VO_var_yaw.value(),
+                         sensorValues._VO_var_vx.value(), sensorValues._VO_var_vy.value(), sensorValues._VO_var_vz.value(),
+                         msg->header.stamp.toSec());
+    }
+  }
+
   void callbackIMU(const sensor_msgs::ImuConstPtr msg) {
     sensorValues._AccX = msg->linear_acceleration.x;
     sensorValues._AccY = msg->linear_acceleration.y;
     sensorValues._AccZ = msg->linear_acceleration.z;
-    sensorValues._GyrX = msg->angular_velocity.x;
-    sensorValues._GyrY = msg->angular_velocity.y;
-    sensorValues._GyrZ = msg->angular_velocity.z;
-    if (sensorValues.checkValidPredictValues() && _ekf.matrixInitialized && beaconsPositionInitialized) {
-      _ekf.EKFPrediction(sensorValues._AccX.value(), sensorValues._AccY.value(),
-                         sensorValues._AccZ.value(), sensorValues._GyrX.value(),
-                         sensorValues._GyrY.value(), sensorValues._GyrZ.value(),
-                         msg->header.stamp.toSec());
-    }
   }
 
   void callbackMag(const sensor_msgs::MagneticFieldConstPtr msg) {
@@ -206,6 +262,7 @@ public:
 
 private:
   SensorMeasurementsMaintainer sensorValues;
+  ros::Subscriber VO_sub;
   ros::Subscriber acc_gyr_sub;
   ros::Subscriber Magnetometer_sub;
   ros::Subscriber beacons_dist_1;

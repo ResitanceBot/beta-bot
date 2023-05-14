@@ -15,16 +15,6 @@ void ExtendedKalmanFilter::initMatrix(pose InitialPose) {
   _sigma = Eigen::Matrix<double, 9, 9>::Identity() * desv_tip_sigma_inicial *
            desv_tip_sigma_inicial;
 
-  _R << desv_tip_R_position * desv_tip_R_position, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      desv_tip_R_position * desv_tip_R_position, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      desv_tip_R_position * desv_tip_R_position, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      desv_tip_R_vel * desv_tip_R_vel, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      desv_tip_R_vel * desv_tip_R_vel, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      desv_tip_R_vel * desv_tip_R_vel, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      desv_tip_R_orientation * desv_tip_R_orientation, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, desv_tip_R_orientation * desv_tip_R_orientation, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, desv_tip_R_orientation * desv_tip_R_orientation;
-
    _Q << desv_tip_Q_beacons * desv_tip_Q_beacons, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
          0, desv_tip_Q_beacons * desv_tip_Q_beacons, 0, 0, 0, 0, 0, 0, 0, 0, 0,
          0, 0, desv_tip_Q_beacons * desv_tip_Q_beacons, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -40,38 +30,43 @@ void ExtendedKalmanFilter::initMatrix(pose InitialPose) {
   matrixInitialized = true;
 }
 // Same as in the "ekf_node" version
-void ExtendedKalmanFilter::EKFPrediction(double LinAccX, double LinAccY,
-                                         double LinAccZ, double AngVelX,
-                                         double AngVelY, double AngVelZ,
+void ExtendedKalmanFilter::EKFPrediction(double VO_x, double VO_y, double VO_z,
+                                         double VO_vx, double VO_vy, double VO_vz,
+                                         double VO_r, double VO_p, double VO_yaw, 
+                                         double VO_var_x, double VO_var_y, double VO_var_z,
+                                         double VO_var_r, double VO_var_p, double VO_var_yaw,
+                                          double VO_var_vx, double VO_var_vy, double VO_var_vz,
                                          double currentTimeStamp) {
 
   const double T = currentTimeStamp - _lastPredTimeStamp;
-  _G << 1, 0, 0, T, 0, 0, 0, 0, 0, 0, 1, 0, 0, T, 0, 0, 0, 0, 0, 0, 1, 0, 0, T,
-      0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 1;
 
-  
-  // Update velocities first??
-  //_nu(3) = _nu(3) + LinAccX * T;
-  //_nu(4) = _nu(4) + LinAccY * T;
-  //_nu(5) = _nu(5) + LinAccZ * T;
-  
-  _nu(0) = _nu(0) + _nu(3) * T + 1 / 2 * LinAccX * T * T;
-  _nu(1) = _nu(1) + _nu(4) * T + 1 / 2 * LinAccY * T * T;
-  _nu(2) = _nu(2) + _nu(5) * T + 1 / 2 * LinAccZ * T * T;
+  _R << VO_var_x, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, VO_var_y, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, VO_var_z, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, VO_var_vx, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, VO_var_vy, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, VO_var_vz, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, VO_var_r, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, VO_var_p, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, VO_var_yaw;
 
-  _nu(3) = _nu(3) + LinAccX * T;
-  _nu(4) = _nu(4) + LinAccY * T;
-  _nu(5) = _nu(5) + LinAccZ * T;
+  _nu(0) = VO_x;
+  _nu(1) = VO_y;
+  _nu(2) = VO_z;
 
-  _nu(6) = _nu(6) + AngVelX * T;
-  _nu(7) = _nu(7) + AngVelY * T;
-  _nu(8) = _nu(8) + AngVelZ * T;
+  _nu(3) = VO_vx;
+  _nu(4) = VO_vy;
+  _nu(5) = VO_vz;
 
-  //std::cout << "POSICIÓN EN PREDICCIÓN [x   y   z] = " << _nu(0) << "   " << _nu(1) << "   " << _nu(2) << std::endl;
+  _nu(6) = VO_p;
+  _nu(7) = VO_r;
+  _nu(8) = VO_yaw;
 
-  _sigma = _G * _sigma * _G.transpose() + _R;
+  //_sigma = _G * _sigma * _G.transpose() + _R;    // With VO, we do not have access to the matriz G
+  _sigma = _sigma + _R;                            // If we assume that the sensor lectures are directly the 
+                                                   // components of the state vector, we can also assume that 
+                                                   // G is the identity, and then, the prediction equation of 
+                                                   // sigma is an incremental equation like this
 
   _lastPredTimeStamp = currentTimeStamp;
 }
