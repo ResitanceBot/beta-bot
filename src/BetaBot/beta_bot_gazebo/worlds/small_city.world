@@ -5,7 +5,13 @@
 
     <gui>
       <camera name="user_camera">
-        <pose>-40.637 0.86 2.365 0 0.1899 0.476</pose>
+        <track_visual>
+          <name>quadrotor</name>
+          <static>true</static>
+          <use_model_frame>true</use_model_frame>
+          <xyz> -7.5 0 5 </xyz>
+          <inherit_yaw>true</inherit_yaw>
+        </track_visual>
       </camera>
     </gui>
     <scene>
