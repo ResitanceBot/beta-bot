@@ -10,38 +10,35 @@
       <parent link="${parent}"/>
       <child link="${name}_link"/>
     </joint>
-    
+
     <link name="${name}_link">
-<!--      <inertial>
-        <mass value="0.001" />
+      <inertial>
+        <mass value="0.01" />
         <origin xyz="0 0 0" rpy="0 0 0" />
-        <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001" />
+        <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01" />
       </inertial>
       <visual>
-        <origin xyz="0 0 0" rpy="0 0 0" />
+        <origin xyz="0 -0.25 0" rpy="0 0 ${pi/2}" />
         <geometry>
-          <box size="0.01 0.01 0.01" />
+          <mesh filename="package://beta_bot_description/meshes/camera.dae" scale="5 5 5"/>
         </geometry>
-        <material name="Blue">
-          <color rgba="0.0 0.0 0.8 1"/>
-        </material>
       </visual>
       <collision>
-        <origin xyz="0 0 0" rpy="0 0 0" />
+        <origin xyz="-0.1 -0.05 0.05" rpy="0 0 0" />
         <geometry>
-          <box size="0.01 0.01 0.01" />
+          <box size="0.1 0.5 0.1" />
         </geometry>
-      </collision>-->
+      </collision>
     </link>
-    
+
     <joint name="${name}_optical_joint" type="fixed">
       <origin xyz="0 0 0" rpy="${-M_PI/2} 0.0 ${-M_PI/2}" />
       <parent link="${name}_link" />
       <child link="${name}_optical_frame"/>
     </joint>
-  
+
     <link name="${name}_optical_frame"/>
-    
+
     <gazebo reference="${name}_link">
       <sensor type="camera" name="${name}_camera_sensor">
         <update_rate>${update_rate}</update_rate>

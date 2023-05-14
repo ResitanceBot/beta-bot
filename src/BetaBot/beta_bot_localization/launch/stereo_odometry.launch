@@ -5,6 +5,7 @@
 
    <!-- Colocar el marco de referencia de la cámara estéreo -->
    <arg name="pi/2" value="1.5707963267948966" />
+   <!-- PROBABLY NOT THE BEST WAY, ARGUE ABOUT IT-->
    <node pkg="tf2_ros" type="static_transform_publisher" name="static_tf_stereo_camera" args="0 0 0 -$(arg pi/2) 0 -$(arg pi/2) front_cam_link stereo_camera_frame" />
 
    <!-- Run the ROS package stereo_image_proc for image rectification -->
@@ -31,8 +32,9 @@
       <param name="odom_frame_id" type="string" value="nav"/>
       <param name="publish_tf" type="bool" value="false"/>
       <!-- Establecer en "false" si el ground truth está publicando la pose -->
-      
-      <param name="approx_sync" value="true"/> <!-- PONER A TRUE -->
+
+      <param name="approx_sync" value="true"/>
+      <!-- PONER A TRUE -->
       <param name="Odom/Strategy" type="string" value="0"/>
       <!-- 0=BOW, 1=OpticalFlow -->
       <param name="Vis/EstimationType" type="string" value="1"/>
@@ -101,7 +103,7 @@
       <param name="Rtabmap/PublishPdf" type="bool" value="false"/>
       <param name="Rtabmap/PublishLikelihood" type="bool" value="false"/>
       <param name="Rtabmap/ComputeRMSE" type="bool" value="false"/>
-      
+
    </node>
 
 
