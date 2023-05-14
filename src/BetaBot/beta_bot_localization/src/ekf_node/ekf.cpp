@@ -1,5 +1,4 @@
 #include "ekf.hpp"
-#include "ros/ros.h"
 
 void ExtendedKalmanFilter::initMatrix(pose InitialPose) {
 
@@ -48,9 +47,9 @@ void ExtendedKalmanFilter::EKFPrediction(double LinAccX, double LinAccY,
       0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 1;
 
-  _nu(0) = _nu(0) + _nu(3) * T + 1 / 2 * LinAccX * T * T;
-  _nu(1) = _nu(1) + _nu(4) * T + 1 / 2 * LinAccY * T * T;
-  _nu(2) = _nu(2) + _nu(5) * T + 1 / 2 * LinAccZ * T * T;
+  _nu(0) = _nu(0);
+  _nu(1) = _nu(1);
+  _nu(2) = _nu(2);
   _nu(3) = _nu(3) + LinAccX * T;
   _nu(4) = _nu(4) + LinAccY * T;
   _nu(5) = _nu(5) + LinAccZ * T;
@@ -81,10 +80,8 @@ void ExtendedKalmanFilter::EKFUpdate(double xGPS, double yGPS, double zBar,
       accEstimatedPitch, // REVIEWED (OK SUPOSSING STATIC)
       atan2(cos(accEstimatedRoll) * -magY - sin(accEstimatedRoll) * magZ,
             cos(accEstimatedPitch) * magX + sin(accEstimatedRoll) * magY +
-                cos(accEstimatedRoll) * sin(accEstimatedPitch) * magZ); // WRONG
-  ROS_INFO_STREAM("ROLL: " << z(6));
-  ROS_INFO_STREAM("PITCH: " << z(7));
-  ROS_INFO_STREAM("YAW: " << z(8));
+                cos(accEstimatedRoll) * sin(accEstimatedPitch) * magZ);
+
   Eigen::Matrix<double, 9, 1> h;
   h << _nu(0), _nu(1), _nu(2), _nu(0) - T * _nu(3), _nu(1) - T * _nu(4),
       _nu(2) - T * _nu(5), _nu(6), _nu(7), _nu(8);
