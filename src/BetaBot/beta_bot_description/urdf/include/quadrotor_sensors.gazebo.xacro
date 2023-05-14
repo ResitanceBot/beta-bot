@@ -7,7 +7,7 @@
   <!-- Forward facing camera -->
   <xacro:include filename="$(find beta_bot_description)/urdf/include/generic_camera.urdf.xacro" />
   <xacro:generic_camera name="front_cam" parent="base_link" ros_topic="camera/image" cam_info_topic="camera/camera_info" update_rate="30" res_x="640" res_y="480" image_format="R8G8B8" hfov="90">
-    <origin xyz="1.50 -0.0 -0.25" rpy="0 0 0"/>
+    <origin xyz="1.45 -0.0 -0.7" rpy="0 0 0"/>
   </xacro:generic_camera>
 
   <xacro:macro name="quadrotor_sensors">
