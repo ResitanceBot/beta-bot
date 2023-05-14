@@ -62,7 +62,7 @@ void accelerometer_Callback(const sensor_msgs::Imu &msg) {
     accY = accY / NUM_MUESTRAS;
     accZ = accZ / NUM_MUESTRAS;
     roll = atan2(accY, sqrt(accX * accX + accZ * accZ));
-    pitch = atan2(accX, sqrt(accY * accY + accZ * accZ));
+    pitch = atan2(-accX, sqrt(accY * accY + accZ * accZ));
     std::cout << "Acelerometro: Obtenidos roll: " << roll
               << "y pitch: " << pitch << std::endl;
     accelerometer.shutdown();
