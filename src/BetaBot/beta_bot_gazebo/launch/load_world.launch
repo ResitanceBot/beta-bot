@@ -4,6 +4,8 @@
 
   <arg name="world_name"/>
 
+  <env name="GAZEBO_MODEL_PATH" value="$(find beta_bot_gazebo)/model:$(optenv GAZEBO_MODEL_PATH)"/>
+
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find beta_bot_gazebo)/worlds/$(arg world_name).world"/>
     <arg name="use_sim_time" value="true"/>
