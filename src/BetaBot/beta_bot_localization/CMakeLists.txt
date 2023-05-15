@@ -54,6 +54,8 @@ add_dependencies(
   ekf_node_v4 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
   beta_bot_localization_generate_messages_cpp)
 target_link_libraries(ekf_node_v4 ${catkin_LIBRARIES})
+add_executable(stereo_odometry_wrapper src/ekf_node_v4/stereo_odometry_wrapper.cpp)
+target_link_libraries(stereo_odometry_wrapper ${catkin_LIBRARIES})
 
 add_executable(gt_pub src/ground_truth_publisher/ground_truth_publisher.cpp)
 add_dependencies(

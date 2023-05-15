@@ -16,7 +16,8 @@
 class SensorMeasurementsMaintainer {
 public:
   inline bool checkValidPredictValues() {
-    return (_VO_x.has_value() && _VO_y.has_value() && _VO_z.has_value() &&
+    return (_GyrX.has_value() && _GyrY.has_value() && _GyrZ.has_value() &&
+            _VO_x.has_value() && _VO_y.has_value() && _VO_z.has_value() &&
             _VO_vx.has_value() && _VO_vy.has_value() && _VO_vz.has_value() &&
             _VO_r.has_value() && _VO_p.has_value() && _VO_yaw.has_value() &&
             _VO_var_x.has_value() && _VO_var_y.has_value() && _VO_var_z.has_value() &&
@@ -49,6 +50,9 @@ public:
   boost::optional<double> _VO_var_vx;
   boost::optional<double> _VO_var_vy;
   boost::optional<double> _VO_var_vz;
+  boost::optional<double> _GyrX;
+  boost::optional<double> _GyrY;
+  boost::optional<double> _GyrZ;
   boost::optional<double> _AccX;
   boost::optional<double> _AccY;
   boost::optional<double> _AccZ;
@@ -68,7 +72,7 @@ public:
 class EkfROSWrapper {
 public:
   EkfROSWrapper(ros::NodeHandle &nh) {
-    VO_sub = nh.subscribe("/stereo_odometry", 10, &EkfROSWrapper::callbackVO, this);
+    VO_sub = nh.subscribe("/stereo_odometry_map", 10, &EkfROSWrapper::callbackVO, this);
     acc_gyr_sub = nh.subscribe("/raw_imu", 10, &EkfROSWrapper::callbackIMU, this);
     Magnetometer_sub = nh.subscribe("/magnetic/converted", 10, &EkfROSWrapper::callbackMag, this);
     beacons_dist_1 = nh.subscribe("quadrotor/odom_rssi_beacon_1", 10, &EkfROSWrapper::beacons_dist_1_Callback, this);
@@ -85,13 +89,15 @@ public:
   }
 
   void callbackVO(const nav_msgs::OdometryConstPtr msg) {
+    predictionModel = 1;
+    timerVO = ros::Time::now();
     sensorValues._VO_x = msg->pose.pose.position.x;
     sensorValues._VO_y = msg->pose.pose.position.y;
     sensorValues._VO_z = msg->pose.pose.position.z;
 
-    sensorValues._VO_var_x = msg->twist.twist.linear.x;
-    sensorValues._VO_var_y = msg->twist.twist.linear.y;
-    sensorValues._VO_var_z = msg->twist.twist.linear.z;
+    sensorValues._VO_vx = msg->twist.twist.linear.x;
+    sensorValues._VO_vy = msg->twist.twist.linear.y;
+    sensorValues._VO_vz = msg->twist.twist.linear.z;
 
     tf::Quaternion q(
     msg->pose.pose.orientation.x,
@@ -118,20 +124,36 @@ public:
     sensorValues._VO_var_vz   = msg->twist.covariance[14];
 
     if (sensorValues.checkValidPredictValues() && _ekf.matrixInitialized && beaconsPositionInitialized) {
-      _ekf.EKFPrediction(sensorValues._VO_x.value(), sensorValues._VO_y.value(), sensorValues._VO_z.value(),
+      _ekf.EKFPrediction(sensorValues._GyrX.value(), sensorValues._GyrY.value(), sensorValues._GyrZ.value(),
+                         sensorValues._VO_x.value(), sensorValues._VO_y.value(), sensorValues._VO_z.value(),
                          sensorValues._VO_vx.value(), sensorValues._VO_vy.value(), sensorValues._VO_vz.value(),
                          sensorValues._VO_r.value(), sensorValues._VO_p.value(), sensorValues._VO_yaw.value(),
                          sensorValues._VO_var_x.value(), sensorValues._VO_var_y.value(), sensorValues._VO_var_z.value(),
                          sensorValues._VO_var_r.value(), sensorValues._VO_var_p.value(), sensorValues._VO_var_yaw.value(),
                          sensorValues._VO_var_vx.value(), sensorValues._VO_var_vy.value(), sensorValues._VO_var_vz.value(),
-                         msg->header.stamp.toSec());
+                         msg->header.stamp.toSec(),predictionModel);
     }
   }
 
   void callbackIMU(const sensor_msgs::ImuConstPtr msg) {
+    sensorValues._GyrX = msg->angular_velocity.x;
+    sensorValues._GyrY = msg->angular_velocity.y;
+    sensorValues._GyrZ = msg->angular_velocity.z;
     sensorValues._AccX = msg->linear_acceleration.x;
     sensorValues._AccY = msg->linear_acceleration.y;
     sensorValues._AccZ = msg->linear_acceleration.z;
+
+    // Prediction call conditioned to VO lost (predictionModel == 2)
+    if (sensorValues.checkValidPredictValues() && _ekf.matrixInitialized && beaconsPositionInitialized && predictionModel == 2) {
+      _ekf.EKFPrediction(sensorValues._GyrX.value(), sensorValues._GyrY.value(), sensorValues._GyrZ.value(),
+                         sensorValues._VO_x.value(), sensorValues._VO_y.value(), sensorValues._VO_z.value(),
+                         sensorValues._VO_vx.value(), sensorValues._VO_vy.value(), sensorValues._VO_vz.value(),
+                         sensorValues._VO_r.value(), sensorValues._VO_p.value(), sensorValues._VO_yaw.value(),
+                         sensorValues._VO_var_x.value(), sensorValues._VO_var_y.value(), sensorValues._VO_var_z.value(),
+                         sensorValues._VO_var_r.value(), sensorValues._VO_var_p.value(), sensorValues._VO_var_yaw.value(),
+                         sensorValues._VO_var_vx.value(), sensorValues._VO_var_vy.value(), sensorValues._VO_var_vz.value(),
+                         msg->header.stamp.toSec(),predictionModel);
+   }
   }
 
   void callbackMag(const sensor_msgs::MagneticFieldConstPtr msg) {
@@ -217,6 +239,14 @@ public:
   }
 
   void pubPose() {
+    // This function will be called at 50 Hz => it can detect if timerVO triggers
+    if((ros::Time::now()-timerVO).toSec() > 0.3){
+      predictionModel = 2;
+      std::cout << "[ros_wrapper]: VO is lost! Changing prediction model to IMU-MRU" << std::endl;
+      //Pero en el fondo sólo llamas a predicción desde VOCallback, así que hasta que la cámara no se recupere, no hay manera de volver. La confianza en las balizas
+      //no es suficiente porque hemos llegado a subir a un punto en el que no hacen nada. Hay que modelarla y subirla de poco a poco (bajarla poco a poco y no de 10 en 10)
+    } 
+
     pose PoseEstimatedByEKF = _ekf.GetEstimatedPose();
     beta_bot_localization::PoseRPYWithCovariance msgPoseRPY;
     msgPoseRPY.x = PoseEstimatedByEKF.x;
@@ -284,6 +314,10 @@ private:
   // Variables for evaluating if beacons' position has been set
   bool contb[4] = {false, false, false, false};
   bool beaconsPositionInitialized = false;
+
+  // Variable to select prediction model in "EKFPrediction" (1 => VO model; 2 => IMU MRU Model (when odometry is lost))
+  int predictionModel = 1;
+  ros::Time timerVO = ros::Time::now();    // If 0.3 ms pass without any new read from VO, we assume that is completely lost => we use IMU MRU as backup model for prediction
 };
 
 int main(int argc, char **argv) {

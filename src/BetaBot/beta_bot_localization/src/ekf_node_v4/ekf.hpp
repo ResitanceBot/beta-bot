@@ -14,9 +14,11 @@ struct pose {
   long double covariance[36];
 };
 
-constexpr double desv_tip_R_orientation{1};
 constexpr double desv_tip_sigma_inicial{1};
-constexpr double desv_tip_Q_beacons{6.0};   // Based on "/beacons_gazebo/src/rssi_noise.cpp", line 36
+constexpr double desv_tip_R_position{0.1};
+constexpr double desv_tip_R_vel{0.1};
+constexpr double desv_tip_R_orientation{1};
+constexpr double desv_tip_Q_beacons{0.6};   // Based on "/beacons_gazebo/src/rssi_noise.cpp", line 36
 constexpr double desv_tip_Q_or_rp{0.005};   // aprox
 constexpr double desv_tip_Q_or_yaw{1.3e-2}; // aprox
 constexpr double desv_tip_Q_IMU{0.005};
@@ -25,13 +27,14 @@ constexpr double desv_tip_Q_mag{1.3e-2};
 class ExtendedKalmanFilter {
 public:
   void initMatrix(pose InitialPose);
-  void EKFPrediction(double VO_x, double VO_y, double VO_z,
+  void EKFPrediction(double AngVelX, double AngVelY, double AngVelZ,
+                     double VO_x, double VO_y, double VO_z,
                      double VO_vx, double VO_vy, double VO_vz,
                      double VO_r, double VO_p, double VO_yaw, 
                      double VO_var_x, double VO_var_y, double VO_var_z,
                      double VO_var_r, double VO_var_p, double VO_var_yaw,
                      double VO_var_vx, double VO_var_vy, double VO_var_vz,
-                     double currentTimeStamp);
+                     double currentTimeStamp, int predictionModel);
   void EKFUpdate(double dist1, double dist2, double dist3,              // Changes compared to "ekf_node" version         
                  double dist4, double dist1_ant, double dist2_ant, 
                  double dist3_ant, double dist4_ant, double magX, 

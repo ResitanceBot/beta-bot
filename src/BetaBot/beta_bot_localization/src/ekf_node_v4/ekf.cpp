@@ -30,44 +30,78 @@ void ExtendedKalmanFilter::initMatrix(pose InitialPose) {
   matrixInitialized = true;
 }
 // Same as in the "ekf_node" version
-void ExtendedKalmanFilter::EKFPrediction(double VO_x, double VO_y, double VO_z,
+void ExtendedKalmanFilter::EKFPrediction(double AngVelX, double AngVelY, double AngVelZ,
+                                         double VO_x, double VO_y, double VO_z,
                                          double VO_vx, double VO_vy, double VO_vz,
                                          double VO_r, double VO_p, double VO_yaw, 
                                          double VO_var_x, double VO_var_y, double VO_var_z,
                                          double VO_var_r, double VO_var_p, double VO_var_yaw,
                                           double VO_var_vx, double VO_var_vy, double VO_var_vz,
-                                         double currentTimeStamp) {
+                                         double currentTimeStamp, int predictionModel) {
 
   const double T = currentTimeStamp - _lastPredTimeStamp;
 
-  _R << VO_var_x, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, VO_var_y, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, VO_var_z, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, VO_var_vx, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, VO_var_vy, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, VO_var_vz, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, VO_var_r, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, VO_var_p, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, VO_var_yaw;
+  if(predictionModel == 1){  // Visual Odometry is currently available and not lost
+    _R << 100*VO_var_x, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 100*VO_var_y, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 100*VO_var_z, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 100*VO_var_vx, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 100*VO_var_vy, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 100*VO_var_vz, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 100*VO_var_r, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 100*VO_var_p, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 100*VO_var_yaw;
 
-  _nu(0) = VO_x;
-  _nu(1) = VO_y;
-  _nu(2) = VO_z;
+     _nu(0) = VO_x;
+     _nu(1) = VO_y;
+     _nu(2) = VO_z;
 
-  _nu(3) = VO_vx;
-  _nu(4) = VO_vy;
-  _nu(5) = VO_vz;
+     _nu(3) = VO_vx;
+     _nu(4) = VO_vy;
+     _nu(5) = VO_vz;
 
-  _nu(6) = VO_p;
-  _nu(7) = VO_r;
-  _nu(8) = VO_yaw;
+     _nu(6) = VO_p;
+     _nu(7) = VO_r;
+     _nu(8) = VO_yaw;
 
-  //_sigma = _G * _sigma * _G.transpose() + _R;    // With VO, we do not have access to the matriz G
-  _sigma = _sigma + _R;                            // If we assume that the sensor lectures are directly the 
-                                                   // components of the state vector, we can also assume that 
-                                                   // G is the identity, and then, the prediction equation of 
-                                                   // sigma is an incremental equation like this
+     //_sigma = _G * _sigma * _G.transpose() + _R;    // With VO, we do not have access to the matriz G
+     _sigma = _sigma + _R;                            // If we assume that the sensor lectures are directly the 
+                                                      // components of the state vector, we can also assume that 
+                                                      // G is the identity, and then, the prediction equation of 
+                                                      // sigma is an incremental equation like this
 
+  }
+  else{                                               // If Visual Odometry is lost, we will use MRU IMU model as backup
+      
+      std::cout << "[ekf.cpp]: using IMU MRU model for prediction" << std::endl;
+      _R << desv_tip_R_position * desv_tip_R_position, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      desv_tip_R_position * desv_tip_R_position, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      desv_tip_R_position * desv_tip_R_position, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      desv_tip_R_vel * desv_tip_R_vel, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      desv_tip_R_vel * desv_tip_R_vel, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      desv_tip_R_vel * desv_tip_R_vel, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      desv_tip_R_orientation * desv_tip_R_orientation, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, desv_tip_R_orientation * desv_tip_R_orientation, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, desv_tip_R_orientation * desv_tip_R_orientation;
+      
+      _G << 1, 0, 0, T, 0, 0, 0, 0, 0, 0, 1, 0, 0, T, 0, 0, 0, 0, 0, 0, 1, 0, 0, T,
+      0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 1;
+
+      _nu(0) = _nu(0) + _nu(3) * T;
+      _nu(1) = _nu(1) + _nu(4) * T;
+      _nu(2) = _nu(2) + _nu(5) * T;
+      _nu(3) = _nu(3);
+      _nu(4) = _nu(4);
+      _nu(5) = _nu(5);
+      _nu(6) = _nu(6) + AngVelX * T;
+      _nu(7) = _nu(7) + AngVelY * T;
+      _nu(8) = _nu(8) + AngVelZ * T;
+
+      _sigma = _G * _sigma * _G.transpose() + _R;
+  }
+ 
   _lastPredTimeStamp = currentTimeStamp;
 }
 // Changes compared to the "ekf_node" version
@@ -123,25 +157,25 @@ void ExtendedKalmanFilter::EKFUpdate(double dist1, double dist2, double dist3,
   h(j+1) = _nu(7);
   h(j+2) = _nu(8);
 
-  // Modified z-h table
-  // At this point, prove that h is almost equal to z
-  std::cout << "-----------------------------------------------------------------------" << std::endl;
-  std::cout << "h           " << "z           " << "abs(h-z)" << std::endl;
+  // // Modified z-h table
+  // // At this point, prove that h is almost equal to z
+  // std::cout << "-----------------------------------------------------------------------" << std::endl;
+  // std::cout << "h           " << "z           " << "abs(h-z)" << std::endl;
 
-  j=0;
-  for(i=0; i<8; i++){
-    const Eigen::IOFormat fmt(6, 0, "\t", " ", "");    
-    if(dists[i]!=-1.0){
-       std::cout << h(j) << "   |" << z(j) << "   |" << abs(h(j)-z(j)) << std::endl;
-       j++;
-    }
-    else std::cout << "NOCALC" << "   |" << -1 << "   |" << "NODIST" << std::endl;
-  }
+  // j=0;
+  // for(i=0; i<8; i++){
+  //   const Eigen::IOFormat fmt(6, 0, "\t", " ", "");    
+  //   if(dists[i]!=-1.0){
+  //      std::cout << h(j) << "   |" << z(j) << "   |" << abs(h(j)-z(j)) << std::endl;
+  //      j++;
+  //   }
+  //   else std::cout << "NOCALC" << "   |" << -1 << "   |" << "NODIST" << std::endl;
+  // }
 
-  for(int i=j; i<z.size(); i++){
-    const Eigen::IOFormat fmt(6, 0, "\t", " ", "");    
-    std::cout << h(i) << "   |" << z(i) << "   |" << abs(h(i)-z(i)) << std::endl;
-  } 
+  // for(int i=j; i<z.size(); i++){
+  //   const Eigen::IOFormat fmt(6, 0, "\t", " ", "");    
+  //   std::cout << h(i) << "   |" << z(i) << "   |" << abs(h(i)-z(i)) << std::endl;
+  // } 
 
   // MODIFIED JACOBIAN
   // _H declared in "ekf.hpp"
