@@ -27,8 +27,7 @@ constexpr double desv_tip_Q_mag{1.3e-2};
 class ExtendedKalmanFilter {
 public:
   void initMatrix(pose InitialPose);
-  void EKFPrediction(double LinAccX, double LinAccY, double LinAccZ,    // Same as in the "ekf_node" version
-                     double AngVelX, double AngVelY, double AngVelZ,
+  void EKFPrediction(double AngVelX, double AngVelY, double AngVelZ,
                      double currentTimeStamp);
   void EKFUpdate(double dist1, double dist2, double dist3,              // Changes compared to "ekf_node" version         
                  double dist4, double dist1_ant, double dist2_ant, 

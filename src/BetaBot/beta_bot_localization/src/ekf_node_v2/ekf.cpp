@@ -40,8 +40,7 @@ void ExtendedKalmanFilter::initMatrix(pose InitialPose) {
   matrixInitialized = true;
 }
 // Same as in the "ekf_node" version
-void ExtendedKalmanFilter::EKFPrediction(double LinAccX, double LinAccY,
-                                         double LinAccZ, double AngVelX,
+void ExtendedKalmanFilter::EKFPrediction(double AngVelX,
                                          double AngVelY, double AngVelZ,
                                          double currentTimeStamp) {
 
@@ -50,26 +49,16 @@ void ExtendedKalmanFilter::EKFPrediction(double LinAccX, double LinAccY,
       0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 1;
-
   
-  // Update velocities first??
-  //_nu(3) = _nu(3) + LinAccX * T;
-  //_nu(4) = _nu(4) + LinAccY * T;
-  //_nu(5) = _nu(5) + LinAccZ * T;
-  
-  _nu(0) = _nu(0) + _nu(3) * T + 1 / 2 * LinAccX * T * T;
-  _nu(1) = _nu(1) + _nu(4) * T + 1 / 2 * LinAccY * T * T;
-  _nu(2) = _nu(2) + _nu(5) * T + 1 / 2 * LinAccZ * T * T;
-
-  _nu(3) = _nu(3) + LinAccX * T;
-  _nu(4) = _nu(4) + LinAccY * T;
-  _nu(5) = _nu(5) + LinAccZ * T;
-
+  _nu(0) = _nu(0) + _nu(3) * T;
+  _nu(1) = _nu(1) + _nu(4) * T;
+  _nu(2) = _nu(2) + _nu(5) * T;
+  _nu(3) = _nu(3);
+  _nu(4) = _nu(4);
+  _nu(5) = _nu(5);
   _nu(6) = _nu(6) + AngVelX * T;
   _nu(7) = _nu(7) + AngVelY * T;
   _nu(8) = _nu(8) + AngVelZ * T;
-
-  //std::cout << "POSICIÓN EN PREDICCIÓN [x   y   z] = " << _nu(0) << "   " << _nu(1) << "   " << _nu(2) << std::endl;
 
   _sigma = _G * _sigma * _G.transpose() + _R;
 
@@ -207,8 +196,6 @@ void ExtendedKalmanFilter::EKFUpdate(double dist1, double dist2, double dist3,
   K.block(0,0,9,MatrixRowSize) = _sigma * _H.block(0,0,MatrixRowSize,9).transpose() * (_H.block(0,0,MatrixRowSize,9) * _sigma * _H.block(0,0,MatrixRowSize,9).transpose() + _Q_modif.block(0,0,MatrixRowSize,MatrixRowSize)).inverse();
   _nu = _nu + K.block(0,0,9,MatrixRowSize) * (z.block(0,0,MatrixRowSize,1) - h.block(0,0,MatrixRowSize,1));                                                
   _sigma = (Eigen::Matrix<double, 9, 9>::Identity() - K.block(0,0,9,MatrixRowSize) * _H.block(0,0,MatrixRowSize,9)) * _sigma;    
-
-  //std::cout << "POSICIÓN EN ACTUALIZACIÓN [x   y   z] = " << _nu(0) << "   " << _nu(1) << "   " << _nu(2) << std::endl;
 
     _lastUpdTimeStamp = currentTimeStamp;
   }

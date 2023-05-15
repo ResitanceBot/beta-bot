@@ -71,8 +71,7 @@ public:
     sensorValues._GyrY = msg->angular_velocity.y;
     sensorValues._GyrZ = msg->angular_velocity.z;
     if (sensorValues.checkValidPredictValues() && _ekf.matrixInitialized && beaconsPositionInitialized) {
-      _ekf.EKFPrediction(sensorValues._AccX.value(), sensorValues._AccY.value(),
-                         sensorValues._AccZ.value(), sensorValues._GyrX.value(),
+      _ekf.EKFPrediction(sensorValues._GyrX.value(),
                          sensorValues._GyrY.value(), sensorValues._GyrZ.value(),
                          msg->header.stamp.toSec());
     }
