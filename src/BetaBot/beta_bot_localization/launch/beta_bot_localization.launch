@@ -12,7 +12,7 @@
    <node name="ground_truth_pub" pkg="beta_bot_localization" type="gt_pub" output="screen"/>
 
    <!-- LLAMAMOS AL EKF PROPIO -->
-   <node name="ekf_principal" pkg="beta_bot_localization" type="ekf_node" output="screen"/>
+   <node name="ekf_principal" pkg="beta_bot_localization" type="ekf_node_v2" output="screen"/>
    <node name="gn_ini" pkg="beta_bot_localization" type="gn_ini" output="screen"/>
 
 
