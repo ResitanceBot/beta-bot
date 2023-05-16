@@ -29,7 +29,7 @@
       <remap from="odom" to="/stereo_odometry"/>
 
       <param name="frame_id" type="string" value="front_cam_link"/>
-      <param name="odom_frame_id" type="string" value="nav"/>
+      <param name="odom_frame_id" type="string" value="world"/>
       <param name="publish_tf" type="bool" value="false"/>
       <!-- Establecer en "false" si el ground truth está publicando la pose -->
 
@@ -48,8 +48,8 @@
       <param name="GFTT/MinDistance" type="string" value="10"/>
       <param name="GFTT/QualityLevel" type="string" value="0.00001"/>
       <param name="approx_sync" type="bool" value="true"/>
-      <param name="Odom/ResetCountdown" type="int" value="1"/>
-      <!-- Resetear odometria en cuanto se pierda: Automatically reset odometry after X=1 consecutive images on which odometry cannot be computed  -->
+      <param name="Odom/ResetCountdown" type="int" value="0"/>
+      <!-- NO Resetear odometria en cuanto se pierda: Automatically reset odometry after X=1 consecutive images on which odometry cannot be computed  -->
       <param name="publish_null_when_lost" type="bool" value="false"/>
       <!-- False => si se pierde, mantiene como lectura constante el último valor, porque no publica valores nuevos -->
    </node>
@@ -63,7 +63,7 @@
       <param name="subscribe_stereo" type="bool" value="true"/>
       <param name="subscribe_depth" type="bool" value="false"/>
       <param name="subscribe_rgb" type="bool" value="false"/>
-      <param name="publish_tf" type="bool" value="false"/>
+      <param name="publish_tf" type="bool" value="true"/>
       <!-- Establecer en "false" si el ground truth está publicando la pose -->
 
       <remap from="left/image_rect" to="/multisense_sl/left/image_rect"/>
