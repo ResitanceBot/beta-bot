@@ -25,17 +25,23 @@ void ExtendedKalmanFilter::initMatrix(pose InitialPose) {
       0, desv_tip_R_orientation * desv_tip_R_orientation, 0, 0, 0, 0, 0, 0, 0,
       0, 0, desv_tip_R_orientation * desv_tip_R_orientation;
 
-   _Q << desv_tip_Q_beacons * desv_tip_Q_beacons, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, desv_tip_Q_beacons * desv_tip_Q_beacons, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, desv_tip_Q_beacons * desv_tip_Q_beacons, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, desv_tip_Q_beacons * desv_tip_Q_beacons, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 0, desv_tip_Q_beacons * desv_tip_Q_beacons, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, desv_tip_Q_beacons * desv_tip_Q_beacons, 0, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, desv_tip_Q_beacons * desv_tip_Q_beacons, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 0, desv_tip_Q_beacons * desv_tip_Q_beacons, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 0, 0, desv_tip_Q_or_rp * desv_tip_Q_or_rp,     0, 0,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, desv_tip_Q_or_rp * desv_tip_Q_or_rp,     0,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, desv_tip_R_orientation * desv_tip_R_orientation;
+   _Q << desv_tip_Q_beacons * desv_tip_Q_beacons, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, desv_tip_Q_beacons * desv_tip_Q_beacons, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, desv_tip_Q_beacons * desv_tip_Q_beacons, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, desv_tip_Q_beacons * desv_tip_Q_beacons, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, desv_tip_Q_beacons * desv_tip_Q_beacons, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, desv_tip_Q_beacons * desv_tip_Q_beacons, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, desv_tip_Q_beacons * desv_tip_Q_beacons, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, desv_tip_Q_beacons * desv_tip_Q_beacons, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, desv_tip_Q_gps * desv_tip_Q_gps,         0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, desv_tip_Q_gps * desv_tip_Q_gps,         0, 0, 0, 0, 0, 0, 0, 
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, desv_tip_Q_bar * desv_tip_Q_bar,         0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, desv_tip_Q_gps * desv_tip_Q_gps,         0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, desv_tip_Q_gps * desv_tip_Q_gps,         0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, desv_tip_Q_bar * desv_tip_Q_bar,         0, 0, 0,  
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, desv_tip_Q_or_rp * desv_tip_Q_or_rp,     0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, desv_tip_Q_or_rp * desv_tip_Q_or_rp,     0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, desv_tip_R_orientation * desv_tip_R_orientation;
 
   matrixInitialized = true;
 }
@@ -66,10 +72,12 @@ void ExtendedKalmanFilter::EKFPrediction(double AngVelX,
 }
 // Changes compared to the "ekf_node" version
 void ExtendedKalmanFilter::EKFUpdate(double dist1, double dist2, double dist3,             
-                 double dist4, double dist1_ant, double dist2_ant, 
-                 double dist3_ant, double dist4_ant, double magX, double magY, 
-                 double magZ, double LinAccX, double LinAccY,
-                 double LinAccZ, double currentTimeStamp) {
+                                     double dist4, double dist1_ant, double dist2_ant, 
+                                     double dist3_ant, double dist4_ant, double xGPS, 
+                                     double yGPS, double zBar, double xGPS_ant, double yGPS_ant,
+                                     double zBar_ant, double magX, double magY, 
+                                     double magZ, double LinAccX, double LinAccY,
+                                     double LinAccZ, double currentTimeStamp) {
 
   const double T = currentTimeStamp - _lastUpdTimeStamp;
 
@@ -80,7 +88,7 @@ void ExtendedKalmanFilter::EKFUpdate(double dist1, double dist2, double dist3,
   dists << dist1, dist2, dist3, dist4, dist1_ant,
          dist2_ant, dist3_ant, dist4_ant;
 
-  Eigen::Matrix<double, 11, 1> z;
+  Eigen::Matrix<double, 17, 1> z;
   z.setZero();  // Eigen does not initialize its matrices with zeros but with garbage!!!!
   int i=0, j=0;
 
@@ -91,13 +99,19 @@ void ExtendedKalmanFilter::EKFUpdate(double dist1, double dist2, double dist3,
   	}
   }
 
-  z(j) = accEstimatedRoll;
-  z(j+1) = accEstimatedPitch;
-  z(j+2) = atan2(cos(accEstimatedRoll) * -magY - sin(accEstimatedRoll) * magZ, cos(accEstimatedPitch) * magX + sin(accEstimatedRoll) * magY + cos(accEstimatedRoll) * sin(accEstimatedPitch) * magZ); 
+  z(j)   = xGPS;    
+  z(j+1) = yGPS;    
+  z(j+2) = zBar;    
+  z(j+3) = xGPS_ant;
+  z(j+4) = yGPS_ant;
+  z(j+5) = zBar_ant;
+  z(j+6) = accEstimatedRoll;
+  z(j+7) = accEstimatedPitch;
+  z(j+8) = atan2(cos(accEstimatedRoll) * -magY - sin(accEstimatedRoll) * magZ, cos(accEstimatedPitch) * magX + sin(accEstimatedRoll) * magY + cos(accEstimatedRoll) * sin(accEstimatedPitch) * magZ); 
 
-  int MatrixRowSize = j+3; // En este punto, tendré en j+2(r,p,y que siempre están)+1(para empezar a contar en 1), en j+4 el número de elementos real de los vectores
+  int MatrixRowSize = j+9; // En este punto, tendré en j+2(r,p,y que siempre están)+1(para empezar a contar en 1), en j+3 el número de elementos real de los vectores
 
-  Eigen::Matrix<double, 11, 1> h;
+  Eigen::Matrix<double, 17, 1> h;
   h.setZero();   // Eigen does not initialize its matrices with zeros but with garbage!!!!
   j=0;
   for(i=0;i<4;i++){
@@ -113,9 +127,16 @@ void ExtendedKalmanFilter::EKFUpdate(double dist1, double dist2, double dist3,
   		j++;
   	}
   }
-  h(j) = _nu(6);
-  h(j+1) = _nu(7);
-  h(j+2) = _nu(8);
+
+  h(j)   = _nu(0);
+  h(j+1) = _nu(1);
+  h(j+2) = _nu(2);
+  h(j+3) = _nu(0) - T* _nu(3);
+  h(j+4) = _nu(1) - T* _nu(4);
+  h(j+5) = _nu(2) - T* _nu(5);
+  h(j+6) = _nu(6);
+  h(j+7) = _nu(7);
+  h(j+8) = _nu(8);
 
   // Modified z-h table
   // At this point, prove that h is almost equal to z
@@ -165,12 +186,18 @@ void ExtendedKalmanFilter::EKFUpdate(double dist1, double dist2, double dist3,
   	}
   }
 
-  _H.row(j) << 0, 0, 0, 0, 0, 0, 1, 0, 0;
-  _H.row(j+1) << 0, 0, 0, 0, 0, 0, 0, 1, 0;
-  _H.row(j+2) << 0, 0, 0, 0, 0, 0, 0, 0, 1;
+  _H.row(j)   << 1, 0, 0, 0, 0, 0, 0, 0, 0;
+  _H.row(j+1) << 0, 1, 0, 0, 0, 0, 0, 0, 0;
+  _H.row(j+2) << 0, 0, 1, 0, 0, 0, 0, 0, 0;
+  _H.row(j+3) << 1, 0, 0,-T, 0, 0, 0, 0, 0;
+  _H.row(j+4) << 0, 1, 0, 0,-T, 0, 0, 0, 0;
+  _H.row(j+5) << 0, 0, 1, 0, 0,-T, 0, 0, 0;
+  _H.row(j+6) << 0, 0, 0, 0, 0, 0, 1, 0, 0;
+  _H.row(j+7) << 0, 0, 0, 0, 0, 0, 0, 1, 0;
+  _H.row(j+8) << 0, 0, 0, 0, 0, 0, 0, 0, 1;
 
   // MODIFIED Q: THE REST OF _Q_MODIF UNUSED WILL BE FILLED WITH 0's
-  Eigen::Matrix<double, 11, 11> _Q_modif;    // Eigen does not initialize its matrices with zeros but with garbage!!!!
+  Eigen::Matrix<double, 17, 17> _Q_modif;    // Eigen does not initialize its matrices with zeros but with garbage!!!!
   _Q_modif.setZero();                        // Eigen does not initialize its matrices with zeros but with garbage!!!! 
 
   j=0;
@@ -184,6 +211,12 @@ void ExtendedKalmanFilter::EKFUpdate(double dist1, double dist2, double dist3,
   _Q_modif(j,j) = _Q(8,8);
   _Q_modif(j+1,j+1) = _Q(9,9);
   _Q_modif(j+2,j+2) = _Q(10,10);
+  _Q_modif(j+3,j+3) = _Q(11,11);
+  _Q_modif(j+4,j+4) = _Q(12,12);
+  _Q_modif(j+5,j+5) = _Q(13,13);
+  _Q_modif(j+6,j+6) = _Q(14,14);
+  _Q_modif(j+7,j+7) = _Q(15,15);
+  _Q_modif(j+8,j+8) = _Q(16,16);
 
   /* MODIFIED EQUATIONS
   Notes:
@@ -191,7 +224,7 @@ void ExtendedKalmanFilter::EKFUpdate(double dist1, double dist2, double dist3,
   matrix.block(i,j,p,q);  == Block of size (p,q), starting at (i,j) // Related to dynamic memory, it is allowed to use variables
   */
 
-  Eigen::Matrix<double, 9, 11> K;  
+  Eigen::Matrix<double, 9, 17> K;  
   K.setZero();    // Eigen does not initialize its matrices with zeros but with garbage!!!!
   K.block(0,0,9,MatrixRowSize) = _sigma * _H.block(0,0,MatrixRowSize,9).transpose() * (_H.block(0,0,MatrixRowSize,9) * _sigma * _H.block(0,0,MatrixRowSize,9).transpose() + _Q_modif.block(0,0,MatrixRowSize,MatrixRowSize)).inverse();
   _nu = _nu + K.block(0,0,9,MatrixRowSize) * (z.block(0,0,MatrixRowSize,1) - h.block(0,0,MatrixRowSize,1));                                                
