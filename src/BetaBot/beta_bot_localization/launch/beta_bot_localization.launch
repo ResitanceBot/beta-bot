@@ -15,7 +15,7 @@
 
    <!-- LLAMAMOS AL EKF PROPIO -->
    <node name="ekf_principal" pkg="beta_bot_localization" type="ekf_node_$(arg version)" output="screen"/>
-   <group if="$(eval version == 'v4' )">
+   <group if="$(eval version == 'v4' or version == 'v5' )">
       <node name="stereo_odometry_wrapper" pkg="beta_bot_localization" type="stereo_odometry_wrapper" output="screen"/>
    </group>
    <node name="gn_ini" pkg="beta_bot_localization" type="gn_ini" output="screen"/>

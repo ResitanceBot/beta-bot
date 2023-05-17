@@ -66,6 +66,12 @@ add_dependencies(
   beta_bot_localization_generate_messages_cpp)
 target_link_libraries(stereo_odometry_wrapper ${catkin_LIBRARIES})
 
+add_executable(ekf_node_v5 src/ekf_node_v5/ros_wrapper.cpp src/ekf_node_v5/ekf.cpp)
+add_dependencies(
+  ekf_node_v5 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
+  beta_bot_localization_generate_messages_cpp)
+target_link_libraries(ekf_node_v5 ${catkin_LIBRARIES})
+
 add_executable(gt_pub src/ground_truth_publisher/ground_truth_publisher.cpp)
 add_dependencies(
   gt_pub ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
