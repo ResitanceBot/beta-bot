@@ -45,9 +45,12 @@ public:
     Pose.r = _nu(6);
     Pose.p = _nu(7);
     Pose.yaw = _nu(8);
-    for (int i = 0; i < 81; i++) {
-      Pose.covariance[i] = _sigma(i);
+    for (int i=0; i<9; i++) {
+      for(int j=0; j<9; j++){
+        Pose.covariance[i*9 + j] = _sigma(i,j);
+      }
     }
+
     return Pose;
   };
   bool matrixInitialized{false};

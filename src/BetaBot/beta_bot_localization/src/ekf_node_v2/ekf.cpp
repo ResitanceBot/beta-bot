@@ -197,5 +197,8 @@ void ExtendedKalmanFilter::EKFUpdate(double dist1, double dist2, double dist3,
   _nu = _nu + K.block(0,0,9,MatrixRowSize) * (z.block(0,0,MatrixRowSize,1) - h.block(0,0,MatrixRowSize,1));                                                
   _sigma = (Eigen::Matrix<double, 9, 9>::Identity() - K.block(0,0,9,MatrixRowSize) * _H.block(0,0,MatrixRowSize,9)) * _sigma;    
 
+  //std::cout << "K: " << K << std::endl << std::endl;
+  //std::cout << "sigma: " << _sigma << std::endl << std::endl;
+
     _lastUpdTimeStamp = currentTimeStamp;
   }
