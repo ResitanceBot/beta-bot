@@ -1,5 +1,7 @@
 /* LIBRERÍAS */
 #include "beta_bot_localization/PoseRPYWithCovariance.h"
+#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Geometry>
 #include <fstream>
 #include <iostream>
 #include <math.h>
@@ -9,8 +11,9 @@
 /* VARIABLES GLOBALES */
 float x_GT, y_GT, z_GT, roll_GT, pitch_GT,
     yaw_GT; /* Coordenadas del robot reales (Ground Truth) */
-float x_LOC, y_LOC, z_LOC, roll_LOC, pitch_LOC,
-    yaw_LOC; /* Coordenadas del robot calculadas por el EKF */
+float x_LOC, y_LOC, z_LOC, roll_LOC, pitch_LOC, yaw_LOC,
+    incertidumbre_LOC; /* Coordenadas del robot calculadas por el EKF */
+Eigen::Matrix<long double, 9, 9> covariance;
 
 // Apertura de fichero
 // std::ofstream
@@ -34,6 +37,14 @@ void LOCCallback(const beta_bot_localization::PoseRPYWithCovariance &msg) {
   roll_LOC = msg.roll;
   pitch_LOC = msg.pitch;
   yaw_LOC = msg.yaw;
+
+  for (int i = 0; i < 9; i++) {
+    for (int j = 0; j < 9; j++) {
+      covariance(i, j) = msg.covariance[i * 9 + j];
+    }
+  }
+
+  incertidumbre_LOC = covariance.determinant();
 }
 
 /* MAIN */
@@ -76,7 +87,7 @@ int main(int argc, char **argv) {
                     << z_GT << "," << roll_GT << "," << pitch_GT << ","
                     << yaw_GT << "," << x_LOC << "," << y_LOC << "," << z_LOC
                     << "," << roll_LOC << "," << pitch_LOC << "," << yaw_LOC
-                    << std::endl;
+                    << "," << incertidumbre_LOC << std::endl;
 
     last_time = current_time;
     r.sleep();

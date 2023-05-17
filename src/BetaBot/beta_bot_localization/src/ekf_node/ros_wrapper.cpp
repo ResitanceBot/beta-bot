@@ -148,7 +148,7 @@ public:
     msgPoseRPY.roll = PoseEstimatedByEKF.r;
     msgPoseRPY.pitch = PoseEstimatedByEKF.p;
     msgPoseRPY.yaw = PoseEstimatedByEKF.yaw;
-    for (int i = 0; i < 36; i++) {
+    for (int i = 0; i < 81; i++) {
       msgPoseRPY.covariance[i] = PoseEstimatedByEKF.covariance[i];
     }
     _poseRPY_pub.publish(msgPoseRPY);
@@ -167,7 +167,9 @@ public:
     msgPose.pose.pose.orientation.y = ori.y();
     msgPose.pose.pose.orientation.z = ori.z();
     msgPose.pose.pose.orientation.w = ori.w();
-    for (int i = 0; i < 36; i++) {
+    for (int i = 0; i < 36;
+         i++) { // be careful, it represents covariance for x,y,z,vx,vy,vz as
+                // limitation of rviz geometry msgs supported
       msgPose.pose.covariance[i] = PoseEstimatedByEKF.covariance[i];
     }
     _pose_pub.publish(msgPose);

@@ -37,11 +37,11 @@ add_executable(gn_ini src/ini/Gauss_Newton_Algorithm.cpp)
 target_link_libraries(gn_ini ${catkin_LIBRARIES})
 add_dependencies(gn_ini beta_bot_localization_generate_messages_cpp)
 
-add_executable(ekf_node src/ekf_node/ros_wrapper.cpp src/ekf_node/ekf.cpp)
+add_executable(ekf_node_v1 src/ekf_node/ros_wrapper.cpp src/ekf_node/ekf.cpp)
 add_dependencies(
-  ekf_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
+  ekf_node_v1 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
   beta_bot_localization_generate_messages_cpp)
-target_link_libraries(ekf_node ${catkin_LIBRARIES})
+target_link_libraries(ekf_node_v1 ${catkin_LIBRARIES})
 
 add_executable(ekf_node_v2 src/ekf_node_v2/ros_wrapper.cpp src/ekf_node_v2/ekf.cpp)
 add_dependencies(
@@ -61,6 +61,9 @@ add_dependencies(
   beta_bot_localization_generate_messages_cpp)
 target_link_libraries(ekf_node_v4 ${catkin_LIBRARIES})
 add_executable(stereo_odometry_wrapper src/ekf_node_v4/stereo_odometry_wrapper.cpp)
+add_dependencies(
+  stereo_odometry_wrapper ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
+  beta_bot_localization_generate_messages_cpp)
 target_link_libraries(stereo_odometry_wrapper ${catkin_LIBRARIES})
 
 add_executable(gt_pub src/ground_truth_publisher/ground_truth_publisher.cpp)

@@ -1,8 +1,9 @@
+#include "beacons_gazebo/BeaconSimPose.h"
 #include "beta_bot_localization/IniLocalization.h"
 #include "beta_bot_localization/PoseRPYWithCovariance.h"
-#include <beta_bot_localization/IniLocalization.h>
-#include "std_msgs/Float64.h"
 #include "ekf.hpp"
+#include "std_msgs/Float64.h"
+#include <beta_bot_localization/IniLocalization.h>
 #include <boost/optional.hpp>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <nav_msgs/Odometry.h>
@@ -11,7 +12,6 @@
 #include <sensor_msgs/MagneticField.h>
 #include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
-#include "beacons_gazebo/BeaconSimPose.h"
 
 class SensorMeasurementsMaintainer {
 public:
@@ -20,20 +20,23 @@ public:
             _VO_x.has_value() && _VO_y.has_value() && _VO_z.has_value() &&
             _VO_vx.has_value() && _VO_vy.has_value() && _VO_vz.has_value() &&
             _VO_r.has_value() && _VO_p.has_value() && _VO_yaw.has_value() &&
-            _VO_var_x.has_value() && _VO_var_y.has_value() && _VO_var_z.has_value() &&
-            _VO_var_vx.has_value() && _VO_var_vy.has_value() && _VO_var_vz.has_value() &&
-            _VO_var_r.has_value() && _VO_var_p.has_value() && _VO_var_yaw.has_value());
+            _VO_var_x.has_value() && _VO_var_y.has_value() &&
+            _VO_var_z.has_value() && _VO_var_vx.has_value() &&
+            _VO_var_vy.has_value() && _VO_var_vz.has_value() &&
+            _VO_var_r.has_value() && _VO_var_p.has_value() &&
+            _VO_var_yaw.has_value());
   }
   inline bool checkValidUpdateValues() {
     return (_AccX.has_value() && _AccY.has_value() && _AccZ.has_value() &&
             _dist1.has_value() && _dist2.has_value() && _dist3.has_value() &&
-            _dist4.has_value() && _dist1_ant.has_value() && _dist2_ant.has_value() &&
-            _dist3_ant.has_value() && _dist4_ant.has_value() && _gpsX.has_value() &&
-            _gpsY.has_value() && _barZ.has_value() && _gpsX_ant.has_value() && 
-            _gpsY_ant.has_value() && _barZ_ant.has_value() && _magX.has_value() &&
-            _magY.has_value() && _magZ.has_value());
+            _dist4.has_value() && _dist1_ant.has_value() &&
+            _dist2_ant.has_value() && _dist3_ant.has_value() &&
+            _dist4_ant.has_value() && _gpsX.has_value() && _gpsY.has_value() &&
+            _barZ.has_value() && _gpsX_ant.has_value() &&
+            _gpsY_ant.has_value() && _barZ_ant.has_value() &&
+            _magX.has_value() && _magY.has_value() && _magZ.has_value());
   }
- 
+
   boost::optional<double> _VO_x;
   boost::optional<double> _VO_y;
   boost::optional<double> _VO_z;
@@ -80,16 +83,30 @@ public:
 class EkfROSWrapper {
 public:
   EkfROSWrapper(ros::NodeHandle &nh) {
-    VO_sub = nh.subscribe("/stereo_odometry_map", 10, &EkfROSWrapper::callbackVO, this);
-    acc_gyr_sub = nh.subscribe("/raw_imu", 10, &EkfROSWrapper::callbackIMU, this);
-    Magnetometer_sub = nh.subscribe("/magnetic/converted", 10, &EkfROSWrapper::callbackMag, this);
-    beacons_dist_1 = nh.subscribe("quadrotor/odom_rssi_beacon_1", 10, &EkfROSWrapper::beacons_dist_1_Callback, this);
-    beacons_dist_2 = nh.subscribe("quadrotor/odom_rssi_beacon_2", 10, &EkfROSWrapper::beacons_dist_2_Callback, this);
-    beacons_dist_3 = nh.subscribe("quadrotor/odom_rssi_beacon_3", 10, &EkfROSWrapper::beacons_dist_3_Callback, this);
-    beacons_dist_4 = nh.subscribe("quadrotor/odom_rssi_beacon_4", 10, &EkfROSWrapper::beacons_dist_4_Callback, this);
-    beacons_pos = nh.subscribe("beacons_gazebo/beacons", 10, &EkfROSWrapper::beacons_pos_Callback, this);
-    GPS_sub = nh.subscribe("/odometry/gps", 10, &EkfROSWrapper::callbackGPS, this);
-    Barometer_sub = nh.subscribe("/pose_height", 10, &EkfROSWrapper::callbackBarometer, this);
+    VO_sub = nh.subscribe("/stereo_odometry_map", 10,
+                          &EkfROSWrapper::callbackVO, this);
+    acc_gyr_sub =
+        nh.subscribe("/raw_imu", 10, &EkfROSWrapper::callbackIMU, this);
+    Magnetometer_sub = nh.subscribe("/magnetic/converted", 10,
+                                    &EkfROSWrapper::callbackMag, this);
+    beacons_dist_1 =
+        nh.subscribe("quadrotor/odom_rssi_beacon_1", 10,
+                     &EkfROSWrapper::beacons_dist_1_Callback, this);
+    beacons_dist_2 =
+        nh.subscribe("quadrotor/odom_rssi_beacon_2", 10,
+                     &EkfROSWrapper::beacons_dist_2_Callback, this);
+    beacons_dist_3 =
+        nh.subscribe("quadrotor/odom_rssi_beacon_3", 10,
+                     &EkfROSWrapper::beacons_dist_3_Callback, this);
+    beacons_dist_4 =
+        nh.subscribe("quadrotor/odom_rssi_beacon_4", 10,
+                     &EkfROSWrapper::beacons_dist_4_Callback, this);
+    beacons_pos = nh.subscribe("beacons_gazebo/beacons", 10,
+                               &EkfROSWrapper::beacons_pos_Callback, this);
+    GPS_sub =
+        nh.subscribe("/odometry/gps", 10, &EkfROSWrapper::callbackGPS, this);
+    Barometer_sub = nh.subscribe("/pose_height", 10,
+                                 &EkfROSWrapper::callbackBarometer, this);
 
     init_sub = nh.subscribe("/iniLoc", 10, &EkfROSWrapper::callbackInit, this);
     _pose_pub = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>(
@@ -109,39 +126,43 @@ public:
     sensorValues._VO_vy = msg->twist.twist.linear.y;
     sensorValues._VO_vz = msg->twist.twist.linear.z;
 
-    tf::Quaternion q(
-    msg->pose.pose.orientation.x,
-    msg->pose.pose.orientation.y,
-    msg->pose.pose.orientation.z,
-    msg->pose.pose.orientation.w);
+    tf::Quaternion q(msg->pose.pose.orientation.x, msg->pose.pose.orientation.y,
+                     msg->pose.pose.orientation.z,
+                     msg->pose.pose.orientation.w);
     tf::Matrix3x3 m(q);
     double roll, pitch, yaw;
     m.getRPY(roll, pitch, yaw);
 
-    sensorValues._VO_r   = roll;
-    sensorValues._VO_p   = pitch;
+    sensorValues._VO_r = roll;
+    sensorValues._VO_p = pitch;
     sensorValues._VO_yaw = yaw;
 
-    sensorValues._VO_var_x   = msg->pose.covariance[0];
-    sensorValues._VO_var_y   = msg->pose.covariance[7];
-    sensorValues._VO_var_z   = msg->pose.covariance[14];
-    sensorValues._VO_var_r   = msg->pose.covariance[21];
-    sensorValues._VO_var_p   = msg->pose.covariance[28];
+    sensorValues._VO_var_x = msg->pose.covariance[0];
+    sensorValues._VO_var_y = msg->pose.covariance[7];
+    sensorValues._VO_var_z = msg->pose.covariance[14];
+    sensorValues._VO_var_r = msg->pose.covariance[21];
+    sensorValues._VO_var_p = msg->pose.covariance[28];
     sensorValues._VO_var_yaw = msg->pose.covariance[35];
 
-    sensorValues._VO_var_vx   = msg->twist.covariance[0];
-    sensorValues._VO_var_vy   = msg->twist.covariance[7];
-    sensorValues._VO_var_vz   = msg->twist.covariance[14];
+    sensorValues._VO_var_vx = msg->twist.covariance[0];
+    sensorValues._VO_var_vy = msg->twist.covariance[7];
+    sensorValues._VO_var_vz = msg->twist.covariance[14];
 
-    if (sensorValues.checkValidPredictValues() && _ekf.matrixInitialized && beaconsPositionInitialized) {
-      _ekf.EKFPrediction(sensorValues._GyrX.value(), sensorValues._GyrY.value(), sensorValues._GyrZ.value(),
-                         sensorValues._VO_x.value(), sensorValues._VO_y.value(), sensorValues._VO_z.value(),
-                         sensorValues._VO_vx.value(), sensorValues._VO_vy.value(), sensorValues._VO_vz.value(),
-                         sensorValues._VO_r.value(), sensorValues._VO_p.value(), sensorValues._VO_yaw.value(),
-                         sensorValues._VO_var_x.value(), sensorValues._VO_var_y.value(), sensorValues._VO_var_z.value(),
-                         sensorValues._VO_var_r.value(), sensorValues._VO_var_p.value(), sensorValues._VO_var_yaw.value(),
-                         sensorValues._VO_var_vx.value(), sensorValues._VO_var_vy.value(), sensorValues._VO_var_vz.value(),
-                         msg->header.stamp.toSec(),predictionModel);
+    if (sensorValues.checkValidPredictValues() && _ekf.matrixInitialized &&
+        beaconsPositionInitialized) {
+      _ekf.EKFPrediction(
+          sensorValues._GyrX.value(), sensorValues._GyrY.value(),
+          sensorValues._GyrZ.value(), sensorValues._VO_x.value(),
+          sensorValues._VO_y.value(), sensorValues._VO_z.value(),
+          sensorValues._VO_vx.value(), sensorValues._VO_vy.value(),
+          sensorValues._VO_vz.value(), sensorValues._VO_r.value(),
+          sensorValues._VO_p.value(), sensorValues._VO_yaw.value(),
+          sensorValues._VO_var_x.value(), sensorValues._VO_var_y.value(),
+          sensorValues._VO_var_z.value(), sensorValues._VO_var_r.value(),
+          sensorValues._VO_var_p.value(), sensorValues._VO_var_yaw.value(),
+          sensorValues._VO_var_vx.value(), sensorValues._VO_var_vy.value(),
+          sensorValues._VO_var_vz.value(), msg->header.stamp.toSec(),
+          predictionModel);
     }
   }
 
@@ -154,30 +175,41 @@ public:
     sensorValues._AccZ = msg->linear_acceleration.z;
 
     // Prediction call conditioned to VO lost (predictionModel == 2)
-    if (sensorValues.checkValidPredictValues() && _ekf.matrixInitialized && beaconsPositionInitialized && predictionModel == 2) {
-      _ekf.EKFPrediction(sensorValues._GyrX.value(), sensorValues._GyrY.value(), sensorValues._GyrZ.value(),
-                         sensorValues._VO_x.value(), sensorValues._VO_y.value(), sensorValues._VO_z.value(),
-                         sensorValues._VO_vx.value(), sensorValues._VO_vy.value(), sensorValues._VO_vz.value(),
-                         sensorValues._VO_r.value(), sensorValues._VO_p.value(), sensorValues._VO_yaw.value(),
-                         sensorValues._VO_var_x.value(), sensorValues._VO_var_y.value(), sensorValues._VO_var_z.value(),
-                         sensorValues._VO_var_r.value(), sensorValues._VO_var_p.value(), sensorValues._VO_var_yaw.value(),
-                         sensorValues._VO_var_vx.value(), sensorValues._VO_var_vy.value(), sensorValues._VO_var_vz.value(),
-                         msg->header.stamp.toSec(),predictionModel);
-   }
+    if (sensorValues.checkValidPredictValues() && _ekf.matrixInitialized &&
+        beaconsPositionInitialized && predictionModel == 2) {
+      _ekf.EKFPrediction(
+          sensorValues._GyrX.value(), sensorValues._GyrY.value(),
+          sensorValues._GyrZ.value(), sensorValues._VO_x.value(),
+          sensorValues._VO_y.value(), sensorValues._VO_z.value(),
+          sensorValues._VO_vx.value(), sensorValues._VO_vy.value(),
+          sensorValues._VO_vz.value(), sensorValues._VO_r.value(),
+          sensorValues._VO_p.value(), sensorValues._VO_yaw.value(),
+          sensorValues._VO_var_x.value(), sensorValues._VO_var_y.value(),
+          sensorValues._VO_var_z.value(), sensorValues._VO_var_r.value(),
+          sensorValues._VO_var_p.value(), sensorValues._VO_var_yaw.value(),
+          sensorValues._VO_var_vx.value(), sensorValues._VO_var_vy.value(),
+          sensorValues._VO_var_vz.value(), msg->header.stamp.toSec(),
+          predictionModel);
+    }
   }
 
   void callbackMag(const sensor_msgs::MagneticFieldConstPtr msg) {
     sensorValues._magX = msg->magnetic_field.x;
     sensorValues._magY = msg->magnetic_field.y;
     sensorValues._magZ = msg->magnetic_field.z;
-    //if (sensorValues.checkValidUpdateValues() && _ekf.matrixInitialized && beaconsPositionInitialized) {
+    // if (sensorValues.checkValidUpdateValues() && _ekf.matrixInitialized &&
+    // beaconsPositionInitialized) {
     //  _ekf.EKFUpdate(sensorValues._dist1.value(), sensorValues._dist2.value(),
     //                 sensorValues._dist3.value(), sensorValues._dist4.value(),
-    //                 sensorValues._dist1_ant.value(), sensorValues._dist2_ant.value(),
-    //                 sensorValues._dist3_ant.value(), sensorValues._dist4_ant.value(),
+    //                 sensorValues._dist1_ant.value(),
+    //                 sensorValues._dist2_ant.value(),
+    //                 sensorValues._dist3_ant.value(),
+    //                 sensorValues._dist4_ant.value(),
     //                 sensorValues._gpsX.value(), sensorValues._gpsY.value(),
-    //                 sensorValues._barZ.value(), sensorValues._gpsX_ant.value(),
-    //                 sensorValues._gpsY_ant.value(), sensorValues._barZ_ant.value(),
+    //                 sensorValues._barZ.value(),
+    //                 sensorValues._gpsX_ant.value(),
+    //                 sensorValues._gpsY_ant.value(),
+    //                 sensorValues._barZ_ant.value(),
     //                 sensorValues._magX.value(), sensorValues._magY.value(),
     //                 sensorValues._magZ.value(), sensorValues._AccX.value(),
     //                 sensorValues._AccY.value(), sensorValues._AccZ.value(),
@@ -187,30 +219,38 @@ public:
 
   void beacons_dist_1_Callback(const std_msgs::Float64 msg) {
     sensorValues._dist1_ant = sensorValues._dist1;
-    if((ros::Time::now() - lastStampBeacon1).toSec() < 1/20.0)sensorValues._dist1 = msg.data;
-    else sensorValues._dist1 = -1.0;
-    lastStampBeacon1 = ros::Time::now();  
+    if ((ros::Time::now() - lastStampBeacon1).toSec() < 1 / 20.0)
+      sensorValues._dist1 = msg.data;
+    else
+      sensorValues._dist1 = -1.0;
+    lastStampBeacon1 = ros::Time::now();
   }
-  
+
   void beacons_dist_2_Callback(const std_msgs::Float64 msg) {
     sensorValues._dist2_ant = sensorValues._dist2;
-    if((ros::Time::now() - lastStampBeacon2).toSec() < 1/20.0)sensorValues._dist2 = msg.data;
-    else sensorValues._dist2 = -1.0;
-    lastStampBeacon2 = ros::Time::now();  
+    if ((ros::Time::now() - lastStampBeacon2).toSec() < 1 / 20.0)
+      sensorValues._dist2 = msg.data;
+    else
+      sensorValues._dist2 = -1.0;
+    lastStampBeacon2 = ros::Time::now();
   }
 
   void beacons_dist_3_Callback(const std_msgs::Float64 msg) {
     sensorValues._dist3_ant = sensorValues._dist3;
-    if((ros::Time::now() - lastStampBeacon3).toSec() < 1/20.0)sensorValues._dist3 = msg.data;
-    else sensorValues._dist3 = -1.0;  
+    if ((ros::Time::now() - lastStampBeacon3).toSec() < 1 / 20.0)
+      sensorValues._dist3 = msg.data;
+    else
+      sensorValues._dist3 = -1.0;
     lastStampBeacon3 = ros::Time::now();
   }
 
   void beacons_dist_4_Callback(const std_msgs::Float64 msg) {
     sensorValues._dist4_ant = sensorValues._dist4;
-    if((ros::Time::now() - lastStampBeacon4).toSec() < 1/20.0)sensorValues._dist4 = msg.data;
-    else sensorValues._dist4 = -1.0;
-    lastStampBeacon4 = ros::Time::now();  
+    if ((ros::Time::now() - lastStampBeacon4).toSec() < 1 / 20.0)
+      sensorValues._dist4 = msg.data;
+    else
+      sensorValues._dist4 = -1.0;
+    lastStampBeacon4 = ros::Time::now();
   }
 
   void beacons_pos_Callback(const beacons_gazebo::BeaconSimPose &msg) {
@@ -218,19 +258,19 @@ public:
     switch (beacon_id) {
     case 1:
       this->contb[beacon_id - 1] = true;
-      _ekf.SetBeaconPosition(msg.position.x,msg.position.y,msg.position.z,1);
+      _ekf.SetBeaconPosition(msg.position.x, msg.position.y, msg.position.z, 1);
       break;
     case 2:
       this->contb[beacon_id - 1] = true;
-      _ekf.SetBeaconPosition(msg.position.x,msg.position.y,msg.position.z,2);
+      _ekf.SetBeaconPosition(msg.position.x, msg.position.y, msg.position.z, 2);
       break;
     case 3:
       this->contb[beacon_id - 1] = true;
-      _ekf.SetBeaconPosition(msg.position.x,msg.position.y,msg.position.z,3);
+      _ekf.SetBeaconPosition(msg.position.x, msg.position.y, msg.position.z, 3);
       break;
     case 4:
       this->contb[beacon_id - 1] = true;
-      _ekf.SetBeaconPosition(msg.position.x,msg.position.y,msg.position.z,4);
+      _ekf.SetBeaconPosition(msg.position.x, msg.position.y, msg.position.z, 4);
       break;
     }
     if ((contb[0] == true) && (contb[1] == true) && (contb[2] == true) &&
@@ -249,18 +289,20 @@ public:
     }
     sensorValues._gpsX = msg->pose.pose.position.x;
     sensorValues._gpsY = msg->pose.pose.position.y;
-    if (sensorValues.checkValidUpdateValues() && _ekf.matrixInitialized && beaconsPositionInitialized) {
-      _ekf.EKFUpdate(sensorValues._dist1.value(), sensorValues._dist2.value(),
-                     sensorValues._dist3.value(), sensorValues._dist4.value(),
-                     sensorValues._dist1_ant.value(), sensorValues._dist2_ant.value(),
-                     sensorValues._dist3_ant.value(), sensorValues._dist4_ant.value(),
-                     sensorValues._gpsX.value(), sensorValues._gpsY.value(),
-                     sensorValues._barZ.value(), sensorValues._gpsX_ant.value(),
-                     sensorValues._gpsY_ant.value(), sensorValues._barZ_ant.value(),
-                     sensorValues._magX.value(), sensorValues._magY.value(),
-                     sensorValues._magZ.value(), sensorValues._AccX.value(),
-                     sensorValues._AccY.value(), sensorValues._AccZ.value(),
-                     msg->header.stamp.toSec());
+    if (sensorValues.checkValidUpdateValues() && _ekf.matrixInitialized &&
+        beaconsPositionInitialized) {
+      _ekf.EKFUpdate(
+          sensorValues._dist1.value(), sensorValues._dist2.value(),
+          sensorValues._dist3.value(), sensorValues._dist4.value(),
+          sensorValues._dist1_ant.value(), sensorValues._dist2_ant.value(),
+          sensorValues._dist3_ant.value(), sensorValues._dist4_ant.value(),
+          sensorValues._gpsX.value(), sensorValues._gpsY.value(),
+          sensorValues._barZ.value(), sensorValues._gpsX_ant.value(),
+          sensorValues._gpsY_ant.value(), sensorValues._barZ_ant.value(),
+          sensorValues._magX.value(), sensorValues._magY.value(),
+          sensorValues._magZ.value(), sensorValues._AccX.value(),
+          sensorValues._AccY.value(), sensorValues._AccZ.value(),
+          msg->header.stamp.toSec());
     }
   }
 
@@ -270,14 +312,19 @@ public:
       sensorValues._barZ_ant = sensorValues._barZ;
     }
     sensorValues._barZ = msg->pose.pose.position.z;
-    //if (sensorValues.checkValidUpdateValues() && _ekf.matrixInitialized && beaconsPositionInitialized) {
+    // if (sensorValues.checkValidUpdateValues() && _ekf.matrixInitialized &&
+    // beaconsPositionInitialized) {
     //  _ekf.EKFUpdate(sensorValues._dist1.value(), sensorValues._dist2.value(),
     //                 sensorValues._dist3.value(), sensorValues._dist4.value(),
-    //                 sensorValues._dist1_ant.value(), sensorValues._dist2_ant.value(),
-    //                 sensorValues._dist3_ant.value(), sensorValues._dist4_ant.value(),
+    //                 sensorValues._dist1_ant.value(),
+    //                 sensorValues._dist2_ant.value(),
+    //                 sensorValues._dist3_ant.value(),
+    //                 sensorValues._dist4_ant.value(),
     //                 sensorValues._gpsX.value(), sensorValues._gpsY.value(),
-    //                 sensorValues._barZ.value(), sensorValues._gpsX_ant.value(),
-    //                 sensorValues._gpsY_ant.value(), sensorValues._barZ_ant.value(),
+    //                 sensorValues._barZ.value(),
+    //                 sensorValues._gpsX_ant.value(),
+    //                 sensorValues._gpsY_ant.value(),
+    //                 sensorValues._barZ_ant.value(),
     //                 sensorValues._magX.value(), sensorValues._magY.value(),
     //                 sensorValues._magZ.value(), sensorValues._AccX.value(),
     //                 sensorValues._AccY.value(), sensorValues._AccZ.value(),
@@ -297,13 +344,19 @@ public:
   }
 
   void pubPose() {
-    // This function will be called at 50 Hz => it can detect if timerVO triggers
-    if((ros::Time::now()-timerVO).toSec() > 0.3){
+    // This function will be called at 50 Hz => it can detect if timerVO
+    // triggers
+    if ((ros::Time::now() - timerVO).toSec() > 0.3) {
       predictionModel = 2;
-      std::cout << "[ros_wrapper]: VO is lost! Changing prediction model to IMU-MRU" << std::endl;
-      //Pero en el fondo sólo llamas a predicción desde VOCallback, así que hasta que la cámara no se recupere, no hay manera de volver. La confianza en las balizas
-      //no es suficiente porque hemos llegado a subir a un punto en el que no hacen nada. Hay que modelarla y subirla de poco a poco (bajarla poco a poco y no de 10 en 10)
-    } 
+      std::cout
+          << "[ros_wrapper]: VO is lost! Changing prediction model to IMU-MRU"
+          << std::endl;
+      // Pero en el fondo sólo llamas a predicción desde VOCallback, así que
+      // hasta que la cámara no se recupere, no hay manera de volver. La
+      // confianza en las balizas no es suficiente porque hemos llegado a subir a
+      // un punto en el que no hacen nada. Hay que modelarla y subirla de poco a
+      // poco (bajarla poco a poco y no de 10 en 10)
+    }
 
     pose PoseEstimatedByEKF = _ekf.GetEstimatedPose();
     beta_bot_localization::PoseRPYWithCovariance msgPoseRPY;
@@ -313,7 +366,7 @@ public:
     msgPoseRPY.roll = PoseEstimatedByEKF.r;
     msgPoseRPY.pitch = PoseEstimatedByEKF.p;
     msgPoseRPY.yaw = PoseEstimatedByEKF.yaw;
-    for (int i = 0; i < 36; i++) {
+    for (int i = 0; i < 81; i++) {
       msgPoseRPY.covariance[i] = PoseEstimatedByEKF.covariance[i];
     }
     _poseRPY_pub.publish(msgPoseRPY);
@@ -375,9 +428,13 @@ private:
   bool contb[4] = {false, false, false, false};
   bool beaconsPositionInitialized = false;
 
-  // Variable to select prediction model in "EKFPrediction" (1 => VO model; 2 => IMU MRU Model (when odometry is lost))
+  // Variable to select prediction model in "EKFPrediction" (1 => VO model; 2 =>
+  // IMU MRU Model (when odometry is lost))
   int predictionModel = 1;
-  ros::Time timerVO = ros::Time::now();    // If 0.3 ms pass without any new read from VO, we assume that is completely lost => we use IMU MRU as backup model for prediction
+  ros::Time timerVO =
+      ros::Time::now(); // If 0.3 ms pass without any new read from VO, we
+                        // assume that is completely lost => we use IMU MRU as
+                        // backup model for prediction
 };
 
 int main(int argc, char **argv) {

@@ -8,6 +8,7 @@
   <arg name="robot_height" default="0.5" />
   <arg name="use_beta_bot_localization" default="true"/>
   <arg name="teleop_mode_selection" default="window"/>
+  <arg name="version" default="v4"/>
 
   <!-- Start Gazebo with wg world running in (max) realtime -->
   <include file="$(find beta_bot_gazebo)/launch/load_world.launch">
@@ -51,7 +52,10 @@
 
   <!-- Launch selected localization node -->
   <group if="$(arg use_beta_bot_localization)">
-    <include file="$(find beta_bot_localization)/launch/beta_bot_localization.launch"/>
+    <include file="$(find beta_bot_localization)/launch/beta_bot_localization.launch">
+      <arg name="version" value="$(arg version)"/>
+
+    </include>
   </group>
   <group unless="$(arg use_beta_bot_localization)">
     <!-- <include file="$(find beta_bot_localization)/launch/robot_localization.launch"/> -->
