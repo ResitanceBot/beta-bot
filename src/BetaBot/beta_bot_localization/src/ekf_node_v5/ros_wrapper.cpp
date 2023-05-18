@@ -116,6 +116,7 @@ public:
         "/estimated_localization/poseRPY", 10);
 
     resetClient = nh.serviceClient<rtabmap_msgs::ResetPose>("/reset_odom_to_pose");
+
   }
 
   void callbackVO(const nav_msgs::OdometryConstPtr msg) {
@@ -151,6 +152,7 @@ public:
     sensorValues._VO_var_vy = msg->twist.covariance[7];
     sensorValues._VO_var_vz = msg->twist.covariance[14];
 
+    IMUprediction = 0;
     if (sensorValues.checkValidPredictValues() && _ekf.matrixInitialized &&
         beaconsPositionInitialized) {
       _ekf.EKFPrediction(
@@ -165,7 +167,7 @@ public:
           sensorValues._VO_var_p.value(), sensorValues._VO_var_yaw.value(),
           sensorValues._VO_var_vx.value(), sensorValues._VO_var_vy.value(),
           sensorValues._VO_var_vz.value(), msg->header.stamp.toSec(),
-          predictionModel);
+          predictionModel, IMUprediction);
     }
   }
 
@@ -177,9 +179,11 @@ public:
     sensorValues._AccY = msg->linear_acceleration.y;
     sensorValues._AccZ = msg->linear_acceleration.z;
 
-    // Prediction call conditioned to VO lost (predictionModel == 2)
+    IMUprediction = 1;
+    // Prediction call will only update rpy when VO is not lost (predictionModel == 1, IMUprediction = 1)
+    // Prediction call conditioned to VO lost => MRU backup model for the whole state vector (predictionModel == 2)
     if (sensorValues.checkValidPredictValues() && _ekf.matrixInitialized &&
-        beaconsPositionInitialized && predictionModel == 2) {
+        beaconsPositionInitialized) {
       _ekf.EKFPrediction(
           sensorValues._GyrX.value(), sensorValues._GyrY.value(),
           sensorValues._GyrZ.value(), sensorValues._VO_x.value(),
@@ -192,7 +196,7 @@ public:
           sensorValues._VO_var_p.value(), sensorValues._VO_var_yaw.value(),
           sensorValues._VO_var_vx.value(), sensorValues._VO_var_vy.value(),
           sensorValues._VO_var_vz.value(), msg->header.stamp.toSec(),
-          predictionModel);
+          predictionModel, IMUprediction);
     }
   }
 
@@ -307,7 +311,6 @@ public:
           sensorValues._AccY.value(), sensorValues._AccZ.value(),
           msg->header.stamp.toSec());
     }
-
     this->resetVO();
   }
 
@@ -348,47 +351,12 @@ public:
     _ekf.initMatrix(InitialPose);
   }
 
-    void resetVO(){
-    // Call reset service and establish nav -> base_link = world -> base_link (from IMU MRU Static Model)
-    /* This is the service we have to call:
-
-    "/reset_odom_to_pose" (rtabmap_msgs/ResetPose)
-    Restart odometry to specified transformation. Format: "x y z roll pitch yaw".
-
-    NOTE: this method will reset VO, but have no relation with reset VO when it is lost. This reset is to establish 
-    the pose of the Visual Odometry (VO) where it is instructed by the EKFUpdate
-
-    */
-
-    pose PoseEstimatedByEKF = _ekf.GetEstimatedPose();
-
-    rtabmap_msgs::ResetPose srv;
-    srv.request.x     = PoseEstimatedByEKF.x;
-    srv.request.y     = PoseEstimatedByEKF.y;
-    srv.request.z     = PoseEstimatedByEKF.z;
-    srv.request.roll  = PoseEstimatedByEKF.r;
-    srv.request.pitch = PoseEstimatedByEKF.p;
-    srv.request.yaw   = PoseEstimatedByEKF.yaw;
-
-    if (resetClient.call(srv))
-    {
-      std::cout << "[ros_wrapper_v4]: Successfully called reset_odom_to_pose service" << std::endl;
-    }
-    else
-    {
-      std::cout << "[ros_wrapper_v4 - ERROR]: Failed to call service reset_odom_to_pose" << std::endl;
-    }
-
-    }
-
   void pubPose() {
     // This function will be called at 50 Hz => it can detect if timerVO
     // triggers
     if ((ros::Time::now() - timerVO).toSec() > 0.3) {
       predictionModel = 2;
-      std::cout
-          << "[ros_wrapper]: VO is lost! Changing prediction model to IMU-MRU"
-          << std::endl;
+      //std::cout << "[ros_wrapper]: VO is lost! Changing prediction model to IMU-MRU" << std::endl;
     }
 
     pose PoseEstimatedByEKF = _ekf.GetEstimatedPose();
@@ -431,6 +399,36 @@ public:
         transform, ros::Time::now(), "world", "base_link"));
   }
 
+  void resetVO(){
+    // Call reset service and establish nav -> base_link = world -> base_link (from IMU MRU Static Model)
+    /* This is the service we have to call:
+
+    "/reset_odom_to_pose" (rtabmap_msgs/ResetPose)
+    Restart odometry to specified transformation. Format: "x y z roll pitch yaw".
+
+    */
+
+    pose PoseEstimatedByEKF = _ekf.GetEstimatedPose();
+
+    rtabmap_msgs::ResetPose srv;
+    srv.request.x     = PoseEstimatedByEKF.x;
+    srv.request.y     = PoseEstimatedByEKF.y;
+    srv.request.z     = PoseEstimatedByEKF.z;
+    srv.request.roll  = PoseEstimatedByEKF.r;
+    srv.request.pitch = PoseEstimatedByEKF.p;
+    srv.request.yaw   = PoseEstimatedByEKF.yaw;
+
+    if (resetClient.call(srv))
+    {
+      std::cout << "[ros_wrapper_v5]: Successfully called reset_odom_to_pose service" << std::endl;
+    }
+    else
+    {
+      std::cout << "[ros_wrapper_v5 - ERROR]: Failed to call service reset_odom_to_pose" << std::endl;
+    }
+
+    }
+
   // should be private, only for debug purposes
   ExtendedKalmanFilter _ekf;
 
@@ -469,6 +467,9 @@ private:
       ros::Time::now(); // If 0.3 ms pass without any new read from VO, we
                         // assume that is completely lost => we use IMU MRU as
                         // backup model for prediction
+                    
+  int IMUprediction;    // This variable is used to differentiate the EKFPrediction step from VO or IMU,
+                        // where each one predicts only a portion of the state vector.
 };
 
 int main(int argc, char **argv) {
