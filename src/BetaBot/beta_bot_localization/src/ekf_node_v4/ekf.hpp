@@ -18,10 +18,9 @@ constexpr double desv_tip_sigma_inicial{1};
 constexpr double desv_tip_R_position{1};
 constexpr double desv_tip_R_vel{1};
 constexpr double desv_tip_R_orientation{1};
-constexpr double desv_tip_Q_gps{30};
+constexpr double desv_tip_Q_gps{120};
 constexpr double desv_tip_Q_bar{0.1};
-constexpr double desv_tip_Q_beacons{
-    0.6}; // Based on "/beacons_gazebo/src/rssi_noise.cpp", line 36
+constexpr double desv_tip_Q_beacons{0.6}; // Based on "/beacons_gazebo/src/rssi_noise.cpp", line 36
 constexpr double desv_tip_Q_or_rp{0.005};   // aprox
 constexpr double desv_tip_Q_or_yaw{1.3e-2}; // aprox
 constexpr double desv_tip_Q_IMU{0.005};

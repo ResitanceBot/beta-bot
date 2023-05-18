@@ -18,10 +18,9 @@ constexpr double desv_tip_sigma_inicial{1};
 constexpr double desv_tip_R_position{1};
 constexpr double desv_tip_R_vel{1};
 constexpr double desv_tip_R_orientation{1};
-constexpr double desv_tip_Q_gps{30};
+constexpr double desv_tip_Q_gps{120};
 constexpr double desv_tip_Q_bar{0.1};
-constexpr double desv_tip_Q_beacons{
-    0.6}; // Based on "/beacons_gazebo/src/rssi_noise.cpp", line 36
+constexpr double desv_tip_Q_beacons{0.6};   // Based on "/beacons_gazebo/src/rssi_noise.cpp", line 36
 constexpr double desv_tip_Q_or_rp{0.005};   // aprox
 constexpr double desv_tip_Q_or_yaw{1.3e-2}; // aprox
 constexpr double desv_tip_Q_IMU{0.005};
@@ -37,7 +36,7 @@ public:
                      double VO_var_z, double VO_var_r, double VO_var_p,
                      double VO_var_yaw, double VO_var_vx, double VO_var_vy,
                      double VO_var_vz, double currentTimeStamp,
-                     int predictionModel);
+                     int predictionModel, int IMUprediction);
 
   void EKFUpdate(double dist1, double dist2, double dist3, double dist4,
                  double dist1_ant, double dist2_ant, double dist3_ant,
@@ -83,7 +82,8 @@ private:
   Eigen::Matrix<double, 17, 17> _Q;
 
   // Internal variables
-  double _lastPredTimeStamp{0};
+  double _lastPredTimeStampVO{0};
+  double _lastPredTimeStampIMU{0};
   double _lastUpdTimeStamp{0};
 
   // Beacons' position

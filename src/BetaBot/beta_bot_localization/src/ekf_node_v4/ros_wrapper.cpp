@@ -12,6 +12,7 @@
 #include <sensor_msgs/MagneticField.h>
 #include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
+#include <rtabmap_msgs/ResetPose.h>
 
 class SensorMeasurementsMaintainer {
 public:
@@ -113,6 +114,8 @@ public:
         "/estimated_localization/pose", 10);
     _poseRPY_pub = nh.advertise<beta_bot_localization::PoseRPYWithCovariance>(
         "/estimated_localization/poseRPY", 10);
+
+    resetClient = nh.serviceClient<rtabmap_msgs::ResetPose>("/reset_odom_to_pose");
   }
 
   void callbackVO(const nav_msgs::OdometryConstPtr msg) {
@@ -304,6 +307,8 @@ public:
           sensorValues._AccY.value(), sensorValues._AccZ.value(),
           msg->header.stamp.toSec());
     }
+
+    this->resetVO();
   }
 
   void callbackBarometer(
@@ -343,6 +348,39 @@ public:
     _ekf.initMatrix(InitialPose);
   }
 
+    void resetVO(){
+    // Call reset service and establish nav -> base_link = world -> base_link (from IMU MRU Static Model)
+    /* This is the service we have to call:
+
+    "/reset_odom_to_pose" (rtabmap_msgs/ResetPose)
+    Restart odometry to specified transformation. Format: "x y z roll pitch yaw".
+
+    NOTE: this method will reset VO, but have no relation with reset VO when it is lost. This reset is to establish 
+    the pose of the Visual Odometry (VO) where it is instructed by the EKFUpdate
+
+    */
+
+    pose PoseEstimatedByEKF = _ekf.GetEstimatedPose();
+
+    rtabmap_msgs::ResetPose srv;
+    srv.request.x     = PoseEstimatedByEKF.x;
+    srv.request.y     = PoseEstimatedByEKF.y;
+    srv.request.z     = PoseEstimatedByEKF.z;
+    srv.request.roll  = PoseEstimatedByEKF.r;
+    srv.request.pitch = PoseEstimatedByEKF.p;
+    srv.request.yaw   = PoseEstimatedByEKF.yaw;
+
+    if (resetClient.call(srv))
+    {
+      std::cout << "[ros_wrapper_v4]: Successfully called reset_odom_to_pose service" << std::endl;
+    }
+    else
+    {
+      std::cout << "[ros_wrapper_v4 - ERROR]: Failed to call service reset_odom_to_pose" << std::endl;
+    }
+
+    }
+
   void pubPose() {
     // This function will be called at 50 Hz => it can detect if timerVO
     // triggers
@@ -351,11 +389,6 @@ public:
       std::cout
           << "[ros_wrapper]: VO is lost! Changing prediction model to IMU-MRU"
           << std::endl;
-      // Pero en el fondo sólo llamas a predicción desde VOCallback, así que
-      // hasta que la cámara no se recupere, no hay manera de volver. La
-      // confianza en las balizas no es suficiente porque hemos llegado a subir a
-      // un punto en el que no hacen nada. Hay que modelarla y subirla de poco a
-      // poco (bajarla poco a poco y no de 10 en 10)
     }
 
     pose PoseEstimatedByEKF = _ekf.GetEstimatedPose();
@@ -417,6 +450,7 @@ private:
   ros::Publisher _pose_pub;
   ros::Publisher _poseRPY_pub;
   tf::TransformBroadcaster _transform_broadcaster;
+  ros::ServiceClient resetClient;
 
   // Time variables for evaluating data losses from beacons
   ros::Time lastStampBeacon1;

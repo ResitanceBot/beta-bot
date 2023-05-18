@@ -178,25 +178,25 @@ void ExtendedKalmanFilter::EKFUpdate(double dist1, double dist2, double dist3,
   h(j+7) = _nu(7);
   h(j+8) = _nu(8);
 
-  // Modified z-h table
-  // At this point, prove that h is almost equal to z
-  std::cout << "-----------------------------------------------------------------------" << std::endl;
-  std::cout << "h           " << "z           " << "abs(h-z)" << std::endl;
+  // // Modified z-h table
+  // // At this point, prove that h is almost equal to z
+  // std::cout << "-----------------------------------------------------------------------" << std::endl;
+  // std::cout << "h           " << "z           " << "abs(h-z)" << std::endl;
 
-  j=0;
-  for(i=0; i<8; i++){
-    const Eigen::IOFormat fmt(6, 0, "\t", " ", "");    
-    if(dists[i]!=-1.0){
-       std::cout << h(j) << "   |" << z(j) << "   |" << abs(h(j)-z(j)) << std::endl;
-       j++;
-    }
-    else std::cout << "NOCALC" << "   |" << -1 << "   |" << "NODIST" << std::endl;
-  }
+  // j=0;
+  // for(i=0; i<8; i++){
+  //   const Eigen::IOFormat fmt(6, 0, "\t", " ", "");    
+  //   if(dists[i]!=-1.0){
+  //      std::cout << h(j) << "   |" << z(j) << "   |" << abs(h(j)-z(j)) << std::endl;
+  //      j++;
+  //   }
+  //   else std::cout << "NOCALC" << "   |" << -1 << "   |" << "NODIST" << std::endl;
+  // }
 
-  for(int i=j; i<z.size(); i++){
-    const Eigen::IOFormat fmt(6, 0, "\t", " ", "");    
-    std::cout << h(i) << "   |" << z(i) << "   |" << abs(h(i)-z(i)) << std::endl;
-  } 
+  // for(int i=j; i<z.size(); i++){
+  //   const Eigen::IOFormat fmt(6, 0, "\t", " ", "");    
+  //   std::cout << h(i) << "   |" << z(i) << "   |" << abs(h(i)-z(i)) << std::endl;
+  // } 
 
   // MODIFIED JACOBIAN
   // _H declared in "ekf.hpp"
