@@ -1,0 +1,9 @@
+Row	Media de Errores Medios	Desv.Típ de Errores Medios	Media de Errores Máximos	Desv.Típ de Errores Máximos
+X [m]	0.34	0.02	1.91	0.33
+Y [m]	0.4	0.1	2.44	0.75
+Z [m]	0.17	0.02	1.25	0.25
+Dist [m]	0.64	0.09	2.76	0.72
+Roll [º]	4.26	0.68	72.45	60.98
+Pitch [º]	4.02	0.5	58.34	24.15
+Yaw [º]	2.94	1.62	68.83	47.33
+Ang [º]	8.02	1.27	89.97	48.6
