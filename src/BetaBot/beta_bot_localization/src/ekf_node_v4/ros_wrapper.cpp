@@ -8,11 +8,11 @@
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
+#include <rtabmap_msgs/ResetPose.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/MagneticField.h>
 #include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
-#include <rtabmap_msgs/ResetPose.h>
 
 class SensorMeasurementsMaintainer {
 public:
@@ -115,7 +115,8 @@ public:
     _poseRPY_pub = nh.advertise<beta_bot_localization::PoseRPYWithCovariance>(
         "/estimated_localization/poseRPY", 10);
 
-    resetClient = nh.serviceClient<rtabmap_msgs::ResetPose>("/reset_odom_to_pose");
+    resetClient =
+        nh.serviceClient<rtabmap_msgs::ResetPose>("/reset_odom_to_pose");
   }
 
   void callbackVO(const nav_msgs::OdometryConstPtr msg) {
@@ -307,7 +308,7 @@ public:
           sensorValues._AccY.value(), sensorValues._AccZ.value(),
           msg->header.stamp.toSec());
     }
-
+    std::cout << "[ros_wrapper_v4.cpp] EKF being updated" << std::endl;
     this->resetVO();
   }
 
@@ -348,38 +349,41 @@ public:
     _ekf.initMatrix(InitialPose);
   }
 
-    void resetVO(){
-    // Call reset service and establish nav -> base_link = world -> base_link (from IMU MRU Static Model)
+  void resetVO() {
+    // Call reset service and establish nav -> base_link = world -> base_link
+    // (from IMU MRU Static Model)
     /* This is the service we have to call:
 
     "/reset_odom_to_pose" (rtabmap_msgs/ResetPose)
-    Restart odometry to specified transformation. Format: "x y z roll pitch yaw".
+    Restart odometry to specified transformation. Format: "x y z roll pitch
+    yaw".
 
-    NOTE: this method will reset VO, but have no relation with reset VO when it is lost. This reset is to establish 
-    the pose of the Visual Odometry (VO) where it is instructed by the EKFUpdate
+    NOTE: this method will reset VO, but have no relation with reset VO when it
+    is lost. This reset is to establish the pose of the Visual Odometry (VO)
+    where it is instructed by the EKFUpdate
 
     */
 
     pose PoseEstimatedByEKF = _ekf.GetEstimatedPose();
 
     rtabmap_msgs::ResetPose srv;
-    srv.request.x     = PoseEstimatedByEKF.x;
-    srv.request.y     = PoseEstimatedByEKF.y;
-    srv.request.z     = PoseEstimatedByEKF.z;
-    srv.request.roll  = PoseEstimatedByEKF.r;
+    srv.request.x = PoseEstimatedByEKF.x;
+    srv.request.y = PoseEstimatedByEKF.y;
+    srv.request.z = PoseEstimatedByEKF.z;
+    srv.request.roll = PoseEstimatedByEKF.r;
     srv.request.pitch = PoseEstimatedByEKF.p;
-    srv.request.yaw   = PoseEstimatedByEKF.yaw;
+    srv.request.yaw = PoseEstimatedByEKF.yaw;
 
-    if (resetClient.call(srv))
-    {
-      std::cout << "[ros_wrapper_v4]: Successfully called reset_odom_to_pose service" << std::endl;
+    if (resetClient.call(srv)) {
+      std::cout
+          << "[ros_wrapper_v4]: Successfully called reset_odom_to_pose service"
+          << std::endl;
+    } else {
+      std::cout << "[ros_wrapper_v4 - ERROR]: Failed to call service "
+                   "reset_odom_to_pose"
+                << std::endl;
     }
-    else
-    {
-      std::cout << "[ros_wrapper_v4 - ERROR]: Failed to call service reset_odom_to_pose" << std::endl;
-    }
-
-    }
+  }
 
   void pubPose() {
     // This function will be called at 50 Hz => it can detect if timerVO
