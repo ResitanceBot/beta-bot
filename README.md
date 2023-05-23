@@ -89,6 +89,7 @@ git clone -b doc https://github.com/ResitanceBot/beta-bot.git
 cd beta-bot/custom_docker_images/nvidia_ros
 sudo docker build -t nvidia_ros .      
 ```
+Building this container will take about 10 minutes, so make yourself comfortable.
 And now, with the Docker container built, you can start it with this command (this command requires a PS3/PS4/Xbox controller conected at port /dev/input/js0. If you don't have a controller, delete the line "    --device="/dev/input/js0" \"):
 
 ```
