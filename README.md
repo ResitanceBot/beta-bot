@@ -79,7 +79,6 @@ And now, we can test the Docker container "nvidia/cuda:11.6.2-base-ubuntu20.04":
 
 ```
 sudo docker run --rm --runtime=nvidia --gpus all nvidia/cuda:11.6.2-base-ubuntu20.04 nvidia-smi
-
 ```
 If the test runned correctly, you now have this NVIDIA container available among your Docker images. And now, you can use our Dockerfile to build the Docker container:
 
@@ -91,7 +90,6 @@ sudo docker build -t nvidia_ros .
 ```
 Building this container will take about 10 minutes, so make yourself comfortable.
 And now, with the Docker container built, you can start it with this command (this command requires a PS3/PS4/Xbox controller conected at port /dev/input/js0. If you don't have a controller, delete the line "    --device="/dev/input/js0" \"):
-
 ```
 sudo docker run -it --net=host --gpus all \
     --env="NVIDIA_DRIVER_CAPABILITIES=all" \
