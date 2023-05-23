@@ -125,6 +125,11 @@ You can complete this main launch of the simulation with different params (```ro
  * teleop_mode_selection:=window[default]/keypad
 E.g. ```roslaunch beta_bot_bringup start_simulation.launch teleop_mode_selection:=keypad``` in order to use PS3/PS4/Xbox controller to control drone movements.
 
+In this picture, the main control commands are shown:
+
+![Mando_image](https://github.com/ResitanceBot/beta-bot/blob/doc/images/Mando.png)
+
+
  * version:=v1/v2/v3/v4[default]/v5
 E.g. ```roslaunch beta_bot_bringup start_simulation.launch version:=v5``` for selecting the implemented EKF version (all versions explained at the "Project Description") that you want to launch.
 
